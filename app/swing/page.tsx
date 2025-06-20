@@ -42,13 +42,16 @@ const analysisGuides = [
   },
 ];
 
+const TIMEFRAMES = ['H1', 'H4', 'D1'];
+
 export default function SwingTrading() {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [analysisResults, setAnalysisResults] = useState(null);
+  const [error, setError] = useState(null);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [selectedTimeframe, setSelectedTimeframe] = useState('H1');
 
   // Calculator state
   const [calculatorData, setCalculatorData] = useState({
@@ -82,14 +85,14 @@ export default function SwingTrading() {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelection(file);
+  const handleFileChange = (e) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      handleFileSelection(files[0]);
     }
   };
 
-  const handleFileSelection = (file: File) => {
+  const handleFileSelection = (file) => {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
@@ -108,28 +111,28 @@ export default function SwingTrading() {
     analyzeChart(file);
   };
 
-  const analyzeChart = async (file: File) => {
+  const analyzeChart = async (file) => {
     setIsAnalyzing(true);
     setError(null);
-    setAnalysisResults(null);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await fetch('https://backend.axiontrust.com/analyze-chart/', {
+      const response = await fetch('http://127.0.0.1:8000/analyze-chart/', {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('API request failed');
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
-      const data = await response.json();
-      setAnalysisResults(data);
+      const results = await response.json();
+      setAnalysisResults(results);
     } catch (err) {
-      setError('Failed to analyze chart.');
+      console.error('Analysis error:', err);
+      setError('Failed to analyze chart. Please check your connection and try again.');
       
       // Mock results for demonstration
       setAnalysisResults({
@@ -170,6 +173,39 @@ export default function SwingTrading() {
       stopLossPips: stopLossPips.toFixed(0),
       takeProfitPips: takeProfitPips.toFixed(0)
     };
+  };
+
+  const handleAnalyze = async (timeframe) => {
+    if (!selectedFile) return;
+    setIsAnalyzing(true);
+    setError(null);
+    setAnalysisResults(null);
+    setSelectedTimeframe(timeframe);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch(
+        `https://backend.axiontrust.com/analyze-chart/?timeframe=${timeframe}`,
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(errText || 'API request failed');
+      }
+
+      const data = await response.json();
+      setAnalysisResults(data);
+    } catch (err) {
+      setError('Failed to analyze chart. ' + (err?.message || ''));
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const calculationResults = calculatePositionSize();
@@ -396,6 +432,33 @@ export default function SwingTrading() {
                   />
                 </div>
 
+                {/* Timeframe Dropdown & Execute Button */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 justify-center">
+                  <Label className="text-white font-semibold">Select Timeframe:</Label>
+                  <select
+                    className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
+                    value={selectedTimeframe || 'H1'}
+                    onChange={e => setSelectedTimeframe(e.target.value)}
+                  >
+                    <option value="">Choose timeframe</option>
+                    <option value="H1">H1</option>
+                    <option value="D1">D1</option>
+                    <option value="W1">W1</option>
+                  </select>
+                  <Button
+                    className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
+                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing}
+                    onClick={() => handleAnalyze(selectedTimeframe)}
+                  >
+                    {isAnalyzing ? 'Analyzing...' : 'Execute'}
+                  </Button>
+                </div>
+                {(!selectedFile || !selectedTimeframe) && (
+                  <div className="text-yellow-400 text-sm mt-2">
+                    Please upload a chart image and select a timeframe to enable analysis.
+                  </div>
+                )}
+
                 {isAnalyzing && (
                   <div className="mt-4 p-4 rounded-lg bg-blue-900/30 border border-blue-800">
                     <div className="flex items-center space-x-3">
@@ -405,57 +468,112 @@ export default function SwingTrading() {
                   </div>
                 )}
 
+                {/* Results */}
                 {analysisResults && (
-                  <div className="w-full max-w-4xl mx-auto mt-10 p-6 md:p-12 bg-gradient-to-br from-[#19213] to-[#232b3e] rounded-2xl shadow-xl border border-[#27304a]">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-10 text-left">
-                      AI Analysis Results
-                    </h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Signal</span>
-                        <span className={`text-2xl font-bold ${analysisResults.signal === 'BUY' ? 'text-green-400' : 'text-red-400'}`}>
-                          {analysisResults.signal}
-                        </span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Confidence</span>
-                        <span className="text-2xl font-bold text-white">
-                          {analysisResults.confidence}
-                          {String(analysisResults.confidence).includes('%') ? '' : '%'}
-                        </span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Entry</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.entry}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Stop Loss</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.stop_loss}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Take Profit</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.take_profit}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Risk/Reward</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.risk_reward_ratio}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">RSI</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.technical_analysis?.RSI}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">MACD</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.technical_analysis?.MACD}</span>
-                      </div>
-                      <div className="rounded-xl bg-[#202a3c] p-6 shadow border border-[#27304a] flex flex-col items-start">
-                        <span className="text-sm text-slate-400 mb-2">Moving Avg</span>
-                        <span className="text-2xl font-bold text-white">{analysisResults.technical_analysis?.Moving_Average}</span>
-                      </div>
+                  <div className="mt-6 space-y-4">
+                    <h3 className="text-lg font-medium text-white">Analysis Results</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Signal & Confidence */}
+                      <Card className="bg-slate-700/50 border-slate-600">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-slate-400">Signal</span>
+                            <Badge className={analysisResults.signal === 'BUY' ? 'bg-green-600' : 'bg-red-600'}>
+                              {analysisResults.signal}
+                            </Badge>
+                          </div>
+                          <div className="text-2xl font-bold text-white">
+                            {analysisResults.confidence}
+                            {String(analysisResults.confidence).includes('%') ? '' : '%'}
+                          </div>
+                          <div className="text-sm text-slate-400">Confidence</div>
+                          <div className="mt-2">
+                            <span className="text-blue-400 font-semibold">Timeframe:</span>
+                            <span className="ml-2 px-3 py-1 rounded bg-blue-900 text-blue-200 font-bold">
+                              {analysisResults.timeframe || selectedTimeframe}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      {/* Entry, SL, TP, RR, Dynamic SL/TP */}
+                      <Card className="bg-slate-700/50 border-slate-600">
+                        <CardContent className="p-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">Entry:</span>
+                              <span className="text-white">{analysisResults.entry}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">Stop Loss:</span>
+                              <span className="text-red-400">{analysisResults.stop_loss}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">Take Profit:</span>
+                              <span className="text-green-400">{analysisResults.take_profit}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-slate-400">Risk/Reward:</span>
+                              <span className="text-white">{analysisResults.risk_reward_ratio}</span>
+                            </div>
+                            {analysisResults.dynamic_stop_loss && (
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Dynamic Stop Loss:</span>
+                                <span className="text-red-300">{analysisResults.dynamic_stop_loss}</span>
+                              </div>
+                            )}
+                            {analysisResults.dynamic_take_profit && (
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Dynamic Take Profit:</span>
+                                <span className="text-green-300">{analysisResults.dynamic_take_profit}</span>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
                     </div>
-                    <div className="mt-8 bg-[#232b3e] rounded-xl p-6 text-blue-200 text-base md:text-lg shadow-inner border border-[#27304a]">
-                      <span className="font-semibold text-blue-300">Recommendation:</span> {analysisResults.recommendation}
-                    </div>
+                    {/* Technical Analysis */}
+                    <Card className="bg-slate-700/50 border-slate-600">
+                      <CardContent className="p-4">
+                        <h4 className="font-medium text-white mb-2">Technical Analysis</h4>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">RSI:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.RSI}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">MACD:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.MACD}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Moving Average:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.Moving_Average}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">ICT Order Block:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Order_Block}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">ICT Fair Value Gap:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Fair_Value_Gap}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">ICT Breaker Block:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Breaker_Block}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">ICT Trendline:</span>
+                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Trendline}</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    {/* Recommendation */}
+                    <Card className="bg-slate-700/50 border-slate-600">
+                      <CardContent className="p-4">
+                        <h4 className="font-medium text-white mb-2">Recommendation</h4>
+                        <p className="text-slate-300 text-sm">{analysisResults.recommendation}</p>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
               </CardContent>

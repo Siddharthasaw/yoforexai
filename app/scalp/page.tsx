@@ -577,7 +577,7 @@ export default function ScalpTrading() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Scalp Trading</h1>
-          <p className="text-slate-400">H4, D1, W1 Timeframes</p>
+          <p className="text-slate-400">M1, M5, M15, M30, H1 Timeframes</p>
         </div>
         <div className="flex space-x-3">
           <Button variant="outline" className="border-slate-600 text-slate-300">

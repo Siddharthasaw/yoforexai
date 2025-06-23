@@ -10,12 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { 
-  User, 
-  Camera, 
-  Save, 
-  Shield, 
-  Globe, 
+import {
+  User,
+  Camera,
+  Save,
+  Shield,
+  Globe,
   Bell,
   Eye,
   EyeOff,
@@ -143,7 +143,7 @@ export default function ProfileSettings() {
                   <Label className="text-slate-300">First Name</Label>
                   <Input
                     value={profileData.firstName}
-                    onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
                     className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
@@ -151,7 +151,7 @@ export default function ProfileSettings() {
                   <Label className="text-slate-300">Last Name</Label>
                   <Input
                     value={profileData.lastName}
-                    onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
                     className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
@@ -161,7 +161,7 @@ export default function ProfileSettings() {
                 <Label className="text-slate-300">Username</Label>
                 <Input
                   value={profileData.username}
-                  onChange={(e) => setProfileData({...profileData, username: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
                   className="bg-slate-700 border-slate-600 text-white"
                 />
               </div>
@@ -171,7 +171,7 @@ export default function ProfileSettings() {
                 <Input
                   type="email"
                   value={profileData.email}
-                  onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
                   className="bg-slate-700 border-slate-600 text-white"
                 />
               </div>
@@ -180,7 +180,7 @@ export default function ProfileSettings() {
                 <Label className="text-slate-300">Phone</Label>
                 <Input
                   value={profileData.phone}
-                  onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                   className="bg-slate-700 border-slate-600 text-white"
                 />
               </div>
@@ -189,7 +189,7 @@ export default function ProfileSettings() {
                 <Label className="text-slate-300">Bio</Label>
                 <Textarea
                   value={profileData.bio}
-                  onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                   className="bg-slate-700 border-slate-600 text-white"
                   rows={3}
                 />
@@ -200,13 +200,13 @@ export default function ProfileSettings() {
                   <Label className="text-slate-300">Location</Label>
                   <Input
                     value={profileData.location}
-                    onChange={(e) => setProfileData({...profileData, location: e.target.value})}
+                    onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
                     className="bg-slate-700 border-slate-600 text-white"
                   />
                 </div>
                 <div>
                   <Label className="text-slate-300">Timezone</Label>
-                  <Select value={profileData.timezone} onValueChange={(value) => setProfileData({...profileData, timezone: value})}>
+                  <Select value={profileData.timezone} onValueChange={(value) => setProfileData({ ...profileData, timezone: value })}>
                     <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -227,7 +227,7 @@ export default function ProfileSettings() {
                 <Label className="text-slate-300">Website</Label>
                 <Input
                   value={profileData.website}
-                  onChange={(e) => setProfileData({...profileData, website: e.target.value})}
+                  onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
                   className="bg-slate-700 border-slate-600 text-white"
                   placeholder="https://your-website.com"
                 />
@@ -243,7 +243,7 @@ export default function ProfileSettings() {
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-slate-300">Trading Experience</Label>
-                <Select value={profileData.tradingExperience} onValueChange={(value) => setProfileData({...profileData, tradingExperience: value})}>
+                <Select value={profileData.tradingExperience} onValueChange={(value) => setProfileData({ ...profileData, tradingExperience: value })}>
                   <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -258,7 +258,7 @@ export default function ProfileSettings() {
 
               <div>
                 <Label className="text-slate-300">Risk Tolerance</Label>
-                <Select value={profileData.riskTolerance} onValueChange={(value) => setProfileData({...profileData, riskTolerance: value})}>
+                <Select value={profileData.riskTolerance} onValueChange={(value) => setProfileData({ ...profileData, riskTolerance: value })}>
                   <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -277,16 +277,15 @@ export default function ProfileSettings() {
                     <Badge
                       key={pair}
                       variant={profileData.preferredPairs.includes(pair) ? "default" : "outline"}
-                      className={`cursor-pointer ${
-                        profileData.preferredPairs.includes(pair) 
-                          ? 'bg-blue-600' 
-                          : 'border-slate-600 text-slate-400 hover:bg-slate-700'
-                      }`}
+                      className={`cursor-pointer ${profileData.preferredPairs.includes(pair)
+                        ? 'bg-blue-600'
+                        : 'border-slate-600 text-slate-400 hover:bg-slate-700'
+                        }`}
                       onClick={() => {
                         const newPairs = profileData.preferredPairs.includes(pair)
                           ? profileData.preferredPairs.filter(p => p !== pair)
                           : [...profileData.preferredPairs, pair];
-                        setProfileData({...profileData, preferredPairs: newPairs});
+                        setProfileData({ ...profileData, preferredPairs: newPairs });
                       }}
                     >
                       {pair}
@@ -312,7 +311,7 @@ export default function ProfileSettings() {
             <CardContent className="space-y-4">
               <div>
                 <Label className="text-slate-300">Profile Visibility</Label>
-                <Select value={privacySettings.profileVisibility} onValueChange={(value) => setPrivacySettings({...privacySettings, profileVisibility: value})}>
+                <Select value={privacySettings.profileVisibility} onValueChange={(value) => setPrivacySettings({ ...privacySettings, profileVisibility: value })}>
                   <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
@@ -332,7 +331,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={privacySettings.showTradingStats}
-                    onCheckedChange={(checked) => setPrivacySettings({...privacySettings, showTradingStats: checked})}
+                    onCheckedChange={(checked) => setPrivacySettings({ ...privacySettings, showTradingStats: checked })}
                   />
                 </div>
 
@@ -343,7 +342,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={privacySettings.showFollowers}
-                    onCheckedChange={(checked) => setPrivacySettings({...privacySettings, showFollowers: checked})}
+                    onCheckedChange={(checked) => setPrivacySettings({ ...privacySettings, showFollowers: checked })}
                   />
                 </div>
 
@@ -354,7 +353,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={privacySettings.allowMessages}
-                    onCheckedChange={(checked) => setPrivacySettings({...privacySettings, allowMessages: checked})}
+                    onCheckedChange={(checked) => setPrivacySettings({ ...privacySettings, allowMessages: checked })}
                   />
                 </div>
 
@@ -365,7 +364,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={privacySettings.showOnlineStatus}
-                    onCheckedChange={(checked) => setPrivacySettings({...privacySettings, showOnlineStatus: checked})}
+                    onCheckedChange={(checked) => setPrivacySettings({ ...privacySettings, showOnlineStatus: checked })}
                   />
                 </div>
               </div>
@@ -393,7 +392,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={notificationSettings.emailNotifications}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, emailNotifications: checked})}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, emailNotifications: checked })}
                   />
                 </div>
 
@@ -404,7 +403,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={notificationSettings.pushNotifications}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, pushNotifications: checked})}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, pushNotifications: checked })}
                   />
                 </div>
 
@@ -415,7 +414,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={notificationSettings.tradeAlerts}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, tradeAlerts: checked})}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, tradeAlerts: checked })}
                   />
                 </div>
 
@@ -426,7 +425,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={notificationSettings.marketNews}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, marketNews: checked})}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, marketNews: checked })}
                   />
                 </div>
 
@@ -437,7 +436,7 @@ export default function ProfileSettings() {
                   </div>
                   <Switch
                     checked={notificationSettings.socialUpdates}
-                    onCheckedChange={(checked) => setNotificationSettings({...notificationSettings, socialUpdates: checked})}
+                    onCheckedChange={(checked) => setNotificationSettings({ ...notificationSettings, socialUpdates: checked })}
                   />
                 </div>
               </div>

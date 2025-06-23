@@ -42,7 +42,7 @@ const analysisGuides = [
   },
 ];
 
-const TIMEFRAMES = ['H1', 'H4', 'D1'];
+const TIMEFRAMES = ['H1', 'W1', 'D1'];
 
 export default function SwingTrading() {
   const [dragActive, setDragActive] = useState(false);
@@ -50,8 +50,9 @@ export default function SwingTrading() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResults, setAnalysisResults] = useState(null);
   const [error, setError] = useState(null);
+  const [serverError, setServerError] = useState(null)
   const [showCalculator, setShowCalculator] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState('H1');
+  const [selectedTimeframe, setSelectedTimeframe] = useState("");
 
   // Calculator state
   const [calculatorData, setCalculatorData] = useState({
@@ -78,7 +79,7 @@ export default function SwingTrading() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       handleFileSelection(files[0]);
@@ -108,51 +109,6 @@ export default function SwingTrading() {
 
     setSelectedFile(file);
     setError(null);
-    analyzeChart(file);
-  };
-
-  const analyzeChart = async (file) => {
-    setIsAnalyzing(true);
-    setError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('http://127.0.0.1:8000/analyze-chart/', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const results = await response.json();
-      setAnalysisResults(results);
-    } catch (err) {
-      console.error('Analysis error:', err);
-      setError('Failed to analyze chart. Please check your connection and try again.');
-      
-      // Mock results for demonstration
-      setAnalysisResults({
-        signal: 'BUY',
-        confidence: 87,
-        entry_point: 1.0892,
-        stop_loss: 1.0850,
-        take_profit: 1.0950,
-        risk_reward_ratio: 1.38,
-        technical_indicators: {
-          rsi: 45.2,
-          macd: 'Bullish',
-          moving_average: 'Above 50 EMA'
-        },
-        market_structure: 'Uptrend confirmed',
-        recommendation: 'Strong buy signal with good risk/reward ratio'
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
   };
 
   const calculatePositionSize = () => {
@@ -160,7 +116,7 @@ export default function SwingTrading() {
     const pipValue = 10; // Simplified pip value for EUR/USD
     const stopLossPips = Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
     const positionSize = riskAmount / (stopLossPips * pipValue);
-    
+
     const takeProfitPips = Math.abs(calculatorData.takeProfit - calculatorData.entryPrice) * 10000;
     const riskReward = takeProfitPips / stopLossPips;
     const potentialProfit = riskAmount * riskReward;
@@ -175,8 +131,8 @@ export default function SwingTrading() {
     };
   };
 
-  const handleAnalyze = async (timeframe) => {
-    if (!selectedFile) return;
+  const handleAnalyze = async (timeframe, file) => {
+    if (!file) return;
     setIsAnalyzing(true);
     setError(null);
     setAnalysisResults(null);
@@ -184,10 +140,10 @@ export default function SwingTrading() {
 
     try {
       const formData = new FormData();
-      formData.append('file', selectedFile);
+      formData.append('file', file);
 
       const response = await fetch(
-        `https://backend.axiontrust.com/analyze-chart/?timeframe=${timeframe}`,
+        `https://backend.axiontrust.com/swing/chart/?timeframe=${timeframe}`,
         {
           method: 'POST',
           body: formData,
@@ -200,7 +156,13 @@ export default function SwingTrading() {
       }
 
       const data = await response.json();
-      setAnalysisResults(data);
+      if (data?.error) {
+        setServerError(data?.error);
+      } else {
+        setServerError(null)
+        setAnalysisResults(data);
+      }
+
     } catch (err) {
       setError('Failed to analyze chart. ' + (err?.message || ''));
     } finally {
@@ -241,7 +203,7 @@ export default function SwingTrading() {
                     <Input
                       type="number"
                       value={calculatorData.accountBalance}
-                      onChange={(e) => setCalculatorData({...calculatorData, accountBalance: parseFloat(e.target.value)})}
+                      onChange={(e) => setCalculatorData({ ...calculatorData, accountBalance: parseFloat(e.target.value) })}
                       className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
@@ -251,7 +213,7 @@ export default function SwingTrading() {
                       type="number"
                       step="0.1"
                       value={calculatorData.riskPercentage}
-                      onChange={(e) => setCalculatorData({...calculatorData, riskPercentage: parseFloat(e.target.value)})}
+                      onChange={(e) => setCalculatorData({ ...calculatorData, riskPercentage: parseFloat(e.target.value) })}
                       className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
@@ -260,7 +222,7 @@ export default function SwingTrading() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-slate-300">Currency Pair</Label>
-                    <Select value={calculatorData.currencyPair} onValueChange={(value) => setCalculatorData({...calculatorData, currencyPair: value})}>
+                    <Select value={calculatorData.currencyPair} onValueChange={(value) => setCalculatorData({ ...calculatorData, currencyPair: value })}>
                       <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                         <SelectValue />
                       </SelectTrigger>
@@ -275,7 +237,7 @@ export default function SwingTrading() {
                   </div>
                   <div>
                     <Label className="text-slate-300">Trade Type</Label>
-                    <Select value={calculatorData.tradeType} onValueChange={(value) => setCalculatorData({...calculatorData, tradeType: value})}>
+                    <Select value={calculatorData.tradeType} onValueChange={(value) => setCalculatorData({ ...calculatorData, tradeType: value })}>
                       <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                         <SelectValue />
                       </SelectTrigger>
@@ -294,7 +256,7 @@ export default function SwingTrading() {
                       type="number"
                       step="0.0001"
                       value={calculatorData.entryPrice}
-                      onChange={(e) => setCalculatorData({...calculatorData, entryPrice: parseFloat(e.target.value)})}
+                      onChange={(e) => setCalculatorData({ ...calculatorData, entryPrice: parseFloat(e.target.value) })}
                       className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
@@ -304,7 +266,7 @@ export default function SwingTrading() {
                       type="number"
                       step="0.0001"
                       value={calculatorData.stopLoss}
-                      onChange={(e) => setCalculatorData({...calculatorData, stopLoss: parseFloat(e.target.value)})}
+                      onChange={(e) => setCalculatorData({ ...calculatorData, stopLoss: parseFloat(e.target.value) })}
                       className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
@@ -314,7 +276,7 @@ export default function SwingTrading() {
                       type="number"
                       step="0.0001"
                       value={calculatorData.takeProfit}
-                      onChange={(e) => setCalculatorData({...calculatorData, takeProfit: parseFloat(e.target.value)})}
+                      onChange={(e) => setCalculatorData({ ...calculatorData, takeProfit: parseFloat(e.target.value) })}
                       className="bg-slate-700 border-slate-600 text-white"
                     />
                   </div>
@@ -385,19 +347,18 @@ export default function SwingTrading() {
                 <CardTitle className="text-white">Upload Chart for Analysis</CardTitle>
               </CardHeader>
               <CardContent>
-                {error && (
+                {(error || serverError) && (
                   <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-800 flex items-center space-x-2">
                     <AlertCircle className="h-4 w-4 text-red-400" />
-                    <span className="text-red-400 text-sm">{error}</span>
+                    <span className="text-red-400 text-sm">{error || serverError}</span>
                   </div>
                 )}
 
                 <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    dragActive
-                      ? 'border-blue-500 bg-blue-500/10'
-                      : 'border-slate-600 hover:border-slate-500'
-                  }`}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
+                    ? 'border-blue-500 bg-blue-500/10'
+                    : 'border-slate-600 hover:border-slate-500'
+                    }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
@@ -437,18 +398,18 @@ export default function SwingTrading() {
                   <Label className="text-white font-semibold">Select Timeframe:</Label>
                   <select
                     className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
-                    value={selectedTimeframe || 'H1'}
+                    value={selectedTimeframe || ''}
                     onChange={e => setSelectedTimeframe(e.target.value)}
                   >
                     <option value="">Choose timeframe</option>
-                    <option value="H1">H1</option>
-                    <option value="D1">D1</option>
-                    <option value="W1">W1</option>
+                    {
+                      TIMEFRAMES.map((item, i) => <option value={item} key={i}>{item}</option>)
+                    }
                   </select>
                   <Button
                     className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
-                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing}
-                    onClick={() => handleAnalyze(selectedTimeframe)}
+                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || error}
+                    onClick={() => handleAnalyze(selectedTimeframe, selectedFile)}
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Execute'}
                   </Button>

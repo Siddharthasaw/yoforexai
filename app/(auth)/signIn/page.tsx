@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  HelpCircle, 
-  Upload, 
-  Clock, 
-  ChevronRight, 
-  Mail, 
-  MessageCircle, 
+import {
+  HelpCircle,
+  Upload,
+  Clock,
+  ChevronRight,
+  Mail,
+  MessageCircle,
   Video,
   ThumbsUp,
   ArrowUp,
@@ -100,7 +100,7 @@ const recentRequests = [
   },
 ];
 
-export default function Support() {
+export default function SignIn() {
   const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
@@ -153,7 +153,7 @@ export default function Support() {
 
             <div>
               <Label className="text-slate-300">Subject</Label>
-              <Input 
+              <Input
                 placeholder="Briefly describe your issue"
                 className="bg-slate-700 border-slate-600 text-white placeholder-slate-400"
               />
@@ -161,7 +161,7 @@ export default function Support() {
 
             <div>
               <Label className="text-slate-300">Description</Label>
-              <Textarea 
+              <Textarea
                 placeholder="Please provide as much detail as possible..."
                 className="bg-slate-700 border-slate-600 text-white placeholder-slate-400 min-h-[120px]"
               />
@@ -169,7 +169,7 @@ export default function Support() {
 
             <div>
               <Label className="text-slate-300">Email for responses</Label>
-              <Input 
+              <Input
                 defaultValue="alex.chen@example.com"
                 className="bg-slate-700 border-slate-600 text-white"
               />
@@ -179,11 +179,10 @@ export default function Support() {
             <div>
               <Label className="text-slate-300">Attachments (optional)</Label>
               <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors mt-2 ${
-                  dragActive
-                    ? 'border-blue-500 bg-blue-500/10'
-                    : 'border-slate-600 hover:border-slate-500'
-                }`}
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors mt-2 ${dragActive
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : 'border-slate-600 hover:border-slate-500'
+                  }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -248,14 +247,12 @@ export default function Support() {
                     variant="ghost"
                     className="w-full justify-start text-slate-300 hover:bg-slate-700 h-auto p-3"
                   >
-                    <div className={`p-1.5 rounded mr-3 ${
-                      contact.color === 'purple' ? 'bg-purple-600/20' :
+                    <div className={`p-1.5 rounded mr-3 ${contact.color === 'purple' ? 'bg-purple-600/20' :
                       contact.color === 'blue' ? 'bg-blue-600/20' : 'bg-pink-600/20'
-                    }`}>
-                      <contact.icon className={`h-4 w-4 ${
-                        contact.color === 'purple' ? 'text-purple-400' :
+                      }`}>
+                      <contact.icon className={`h-4 w-4 ${contact.color === 'purple' ? 'text-purple-400' :
                         contact.color === 'blue' ? 'text-blue-400' : 'text-pink-400'
-                      }`} />
+                        }`} />
                     </div>
                     <span className="text-sm">{contact.method}</span>
                   </Button>
@@ -282,10 +279,9 @@ export default function Support() {
             {featureIdeas.map((idea, index) => (
               <div key={index} className="p-4 rounded-lg bg-slate-700/30 border border-slate-600">
                 <div className="flex items-start justify-between mb-3">
-                  <Badge className={`${
-                    idea.color === 'blue' ? 'bg-blue-600' :
+                  <Badge className={`${idea.color === 'blue' ? 'bg-blue-600' :
                     idea.color === 'purple' ? 'bg-purple-600' : 'bg-green-600'
-                  }`}>
+                    }`}>
                     {idea.tag}
                   </Badge>
                   <div className="flex items-center space-x-1 text-slate-400">
@@ -293,16 +289,15 @@ export default function Support() {
                     <span className="text-sm font-medium">{idea.votes}</span>
                   </div>
                 </div>
-                
+
                 <h3 className="font-medium text-white mb-2">{idea.title}</h3>
                 <p className="text-sm text-slate-300 mb-3">{idea.description}</p>
-                
+
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-400">Submitted by {idea.author}</span>
-                  <Badge variant="outline" className={`border-slate-600 text-slate-300 ${
-                    idea.status === 'In Progress' ? 'border-yellow-600 text-yellow-400' :
+                  <Badge variant="outline" className={`border-slate-600 text-slate-300 ${idea.status === 'In Progress' ? 'border-yellow-600 text-yellow-400' :
                     idea.status === 'Under Review' ? 'border-blue-600 text-blue-400' : 'border-green-600 text-green-400'
-                  }`}>
+                    }`}>
                     {idea.status}
                   </Badge>
                 </div>

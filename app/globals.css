@@ -84,3 +84,27 @@
     @apply bg-gradient-to-r from-slate-800/50 to-slate-700/50 border border-slate-700 rounded-lg p-4;
   }
 }
+
+
+/* Tailwind ke sath autofill color fix */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #374151 inset !important; /* #374151 = bg-gray-700 */
+  -webkit-text-fill-color: #fff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+.animate-shake {
+  animation: shake 0.4s;
+}

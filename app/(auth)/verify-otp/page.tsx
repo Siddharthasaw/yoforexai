@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-
+import { postData } from '../../../utils/api'; // adjust path if needed
 
 export default function VerifyOtp() {
   const searchParams = useSearchParams();
@@ -16,11 +16,32 @@ export default function VerifyOtp() {
     e.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      // await postData('/auth/verify-signup-otp', { whatsapp: number, otp });
-      router.push('/dashboard');
+      const phone = `+${number.replace(/\D/g, '')}`;
+
+      const response = await postData('/auth/verify-signup-otp', {
+        phone,
+        otp,
+      });
+
+      if (response?.status === 'success' || response?.token) {
+        // Token mil gaya to dashboard bhej do
+        router.push('/dashboard');
+      } else {
+        // API ne success nai bola
+        setError('Invalid OTP or verification failed');
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid OTP');
+      let msg = err.message;
+      if (err?.response?.detail) {
+        if (Array.isArray(err.response.detail)) {
+          msg = err.response.detail.map((d: any) => d.msg).join(', ');
+        } else if (typeof err.response.detail === 'string') {
+          msg = err.response.detail;
+        }
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -29,8 +50,6 @@ export default function VerifyOtp() {
   return (
     <div className="flex items-center justify-center">
       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 mx-4 my-8">
-        
-        {/* Header */}
         <div className="bg-gray-800 p-8 text-center border-b border-gray-700">
           <h1 className="text-3xl font-bold text-white">Verify OTP</h1>
           <p className="text-gray-400 mt-2 text-sm">
@@ -38,7 +57,6 @@ export default function VerifyOtp() {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleVerify} className="p-6 space-y-5">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">OTP Code</label>
@@ -51,7 +69,15 @@ export default function VerifyOtp() {
               required
               className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
             />
-            {error && <p className="text-red-400 text-xs">{error}</p>}
+            {error && (
+              <div className="flex items-center gap-2 bg-red-600/10 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-2 animate-shake">
+                <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
+                </svg>
+                <span className="text-sm font-medium">{error}</span>
+              </div>
+            )}
           </div>
 
           <button
@@ -73,7 +99,6 @@ export default function VerifyOtp() {
           </button>
         </form>
 
-        {/* Back to Login */}
         <div className="px-6 py-4 bg-gray-800 border-t border-gray-700 text-center">
           <p className="text-sm text-gray-400">
             Wrong number?{' '}
@@ -86,3 +111,5 @@ export default function VerifyOtp() {
     </div>
   );
 }
+
+

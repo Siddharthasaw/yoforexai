@@ -27,7 +27,7 @@ export default function VerifyOtp() {
 
       if (response?.status === 'verified' || response?.token) {
         // Token mil gaya to dashboard bhej do
-        router.push('/');
+        router.push('/signIn');
       } else {
         // API ne success nai bola
         setError('Invalid OTP or verification failed');

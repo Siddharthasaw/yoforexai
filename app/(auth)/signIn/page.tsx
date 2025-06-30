@@ -1,7 +1,35 @@
 'use client';
 
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/material.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import "../signUp/page.css"
+
+async function postData(url: string, data: any) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+
+  let result;
+  try {
+    result = await res.json();
+  } catch (e) {
+    throw new Error('Invalid server response');
+  }
+
+  if (!res.ok) {
+    const error = new Error(result.message || 'API Error');
+    (error as any).response = result;
+    throw error;
+  }
+
+  return result;
+}
 
 export default function SignIn() {
   const router = useRouter();
@@ -11,17 +39,41 @@ export default function SignIn() {
   const [otp, setOtp] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const showError = (err: any) => {
+    let msg = err.message;
+    if (err?.response?.detail) {
+      if (Array.isArray(err.response.detail)) {
+        msg = err.response.detail.map((d: any) => d.msg).join(', ');
+      } else {
+        msg = err.response.detail;
+      }
+    }
+    setError(msg);
+  };
+
   const handleRequestOtp = async () => {
-    setLoading(true);
+
     setError('');
+    if (!whatsapp.trim()) {
+      setError('Field required');
+      return;
+    }
+    if (whatsapp.length < 6 || whatsapp.length > 15) {
+      setError('Please enter a valid mobile number');
+      return;
+    }
+    setLoading(true);
     try {
-      // await postData('/auth/login/request-otp', { whatsapp });
+      await postData('https://backend.axiontrust.com/auth/login/request-otp', {
+        phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp
+      });
       setStep('verify');
     } catch (err: any) {
-      setError(err.message || 'Failed to send OTP');
+      showError(err);
     } finally {
       setLoading(false);
     }
@@ -31,10 +83,23 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
-      // await postData('/auth/login/verify-otp', { whatsapp, otp });
-      router.push('/dashboard');
+      const response = await postData('https://backend.axiontrust.com/auth/login/verify-otp', {
+        phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp,
+        otp
+      });
+
+      if (
+        response?.token ||
+        response?.status === 'success' ||
+        response?.status === 'login_successful' ||
+        response?.status === 'verified'
+      ) {
+        router.push('/');
+      } else {
+        setError('OTP verification failed or account not found.');
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid OTP');
+      showError(err);
     } finally {
       setLoading(false);
     }
@@ -44,28 +109,27 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
-      // await postData('/auth/login/email', { email, password });
-      router.push('/dashboard');
+      const response = await postData('https://backend.axiontrust.com/auth/login/email', { email, password });
+      if (response?.token || response?.status === 'success' || response?.status === 'login_successful') {
+        router.push('/');
+      } else {
+        setError('Invalid credentials');
+      }
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      showError(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex mt-[3rem] items-center justify-center">
       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 mx-4 my-8">
-        
-        {/* Header */}
         <div className="bg-gray-800 p-8 text-center border-b border-gray-700">
           <h1 className="text-3xl font-bold text-white">YoForex AI</h1>
-          <p className="text-gray-400 mt-2 text-sm">
-            Login to access your dashboard
-          </p>
+          <p className="text-gray-400 mt-2 text-sm">Login to access your dashboard</p>
         </div>
 
-        {/* Toggle */}
         <div className="p-6">
           <div className="flex items-center mb-6 border border-gray-700 rounded-lg overflow-hidden">
             <button
@@ -83,51 +147,66 @@ export default function SignIn() {
           </div>
 
           {mode === 'whatsapp' && (
-            <>
-              {step === 'request' ? (
-                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleRequestOtp(); }}>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
-                    <input
+            step === 'request' ? (
+              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleRequestOtp(); }}>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
+                  <div className="flex items-center space-x-2">
+                    <PhoneInput
+                      // value={form.whatsapp}
+                      // onChange={(value) => setForm({ ...form, whatsapp: value })}
                       value={whatsapp}
-                      onChange={(e) => setWhatsapp(e.target.value)}
-                      placeholder="Enter your WhatsApp number"
-                      className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
-                      required
+                      onChange={(value) => setWhatsapp(value)}
+                      country="in"
+                      enableSearch
+                      enableLongNumbers={15}
+                      placeholder="Enter mobile no."
+                      inputStyle={{
+                        width: '100%',
+                        height: '40px',
+                        background: 'transparent',
+                        borderRadius: '4px',
+                        paddingLeft: '50px',
+                        color: 'white' // 👈 optional for white text
+                      }}
+                      buttonStyle={{
+                        background: 'transparent'
+                      }}
+                      dropdownStyle={{ background: 'white', color: 'black' }}
                     />
                   </div>
-                  {error && <p className="text-xs text-red-400">{error}</p>}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg mt-4"
-                  >
-                    {loading ? 'Sending OTP...' : 'Send OTP'}
-                  </button>
-                </form>
-              ) : (
-                <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-300">Enter OTP</label>
-                    <input
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      placeholder="Enter OTP"
-                      className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
-                      required
-                    />
-                  </div>
-                  {error && <p className="text-xs text-red-400">{error}</p>}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg mt-4"
-                  >
-                    {loading ? 'Verifying...' : 'Verify & Login'}
-                  </button>
-                </form>
-              )}
-            </>
+                </div>
+                {error && <p className="text-xs text-red-400">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg mt-4"
+                >
+                  {loading ? 'Sending OTP...' : 'Send OTP'}
+                </button>
+              </form>
+            ) : (
+              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-300">Enter OTP</label>
+                  <input
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter OTP"
+                    className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
+                    required
+                  />
+                </div>
+                {error && <p className="text-xs text-red-400">{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg mt-4"
+                >
+                  {loading ? 'Verifying...' : 'Verify & Login'}
+                </button>
+              </form>
+            )
           )}
 
           {mode === 'email' && (
@@ -144,16 +223,34 @@ export default function SignIn() {
                 />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 relative">
                 <label className="text-sm font-medium text-gray-300">Password</label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
-                  className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
+                  className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400 pr-12"
                   required
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-3 top-9 text-gray-400 hover:text-gray-200"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    // Eye-off SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-5 0-9-4-9-7s4-7 9-7c1.03 0 2.02.155 2.96.44M15 12a3 3 0 11-6 0 3 3 0 016 0zm6.36 3.09A9.956 9.956 0 0021 12c0-3-4-7-9-7-.71 0-1.4.07-2.07.2M3 3l18 18" />
+                    </svg>
+                  ) : (
+                    // Eye SVG
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 3-4 7-9 7s-9-4-9-7 4-7 9-7 9 4 9 7z" />
+                    </svg>
+                  )}
+                </button>
               </div>
 
               {error && <p className="text-xs text-red-400">{error}</p>}
@@ -166,16 +263,15 @@ export default function SignIn() {
               </button>
             </form>
           )}
-        </div>
 
-        {/* Signup Link */}
-        <div className="px-6 py-4 bg-gray-800 border-t border-gray-700 text-center">
-          <p className="text-sm text-gray-400">
-            Don&apos;t have an account?{' '}
-            <a href="/auth/signUp" className="text-blue-400 font-medium hover:underline">
-              Sign up
-            </a>
-          </p>
+          <div className="px-6 py-4 bg-gray-800 border-t border-gray-700 text-center">
+            <p className="text-sm text-gray-400">
+              Don&apos;t have an account?{' '}
+              <a href="/signUp" className="text-blue-400 font-medium hover:underline">
+                Sign up
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>

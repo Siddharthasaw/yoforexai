@@ -22,7 +22,7 @@ function formatPhone(phone: string) {
   // Agar + se start nahi hai, to +91 laga do (ya user country ke hisaab se)
   if (phone.startsWith('+')) return phone;
   // Default India ke liye +91, aap country code dynamic bhi kar sakte hain
-  return '+91' + phone.replace(/^0+/, '');
+  return '+' + phone.replace(/^0+/, '');
 }
 
 export default function SignUp() {

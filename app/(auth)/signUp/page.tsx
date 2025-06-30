@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Select from 'react-select';
+// import Select from 'react-select';
 import countryList from 'react-select-country-list';
 import ReactCountryFlag from 'react-country-flag';
-import { postData } from '../../../utils/api'; // ✅ path adjust kar lena agar zarurat ho
+import { postData } from '../../../utils/api';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/material.css';
+import "./page.css"
 
 const countryOptions = countryList().getData();
 
@@ -19,9 +22,7 @@ function getOptionLabel(option: any) {
 }
 
 function formatPhone(phone: string) {
-  // Agar + se start nahi hai, to +91 laga do (ya user country ke hisaab se)
   if (phone.startsWith('+')) return phone;
-  // Default India ke liye +91, aap country code dynamic bhi kar sakte hain
   return '+' + phone.replace(/^0+/, '');
 }
 
@@ -30,7 +31,6 @@ export default function SignUp() {
   const [form, setForm] = useState({
     name: '',
     email: '',
-    country: 'India',
     whatsapp: '',
     password: ''
   });
@@ -47,7 +47,6 @@ export default function SignUp() {
     let newErrors: { [key: string]: string } = {};
     if (!form.name) newErrors.name = "Full Name is required";
     if (!form.email) newErrors.email = "Email is required";
-    if (!form.country) newErrors.country = "Country is required";
     if (!form.whatsapp) newErrors.whatsapp = "WhatsApp number is required";
     if (!form.password) newErrors.password = "Password is required";
     setErrors(newErrors);
@@ -58,10 +57,11 @@ export default function SignUp() {
       const payload = {
         name: form.name,
         email: form.email,
-        country: form.country,
-        phone: formatPhone(form.whatsapp), // <-- yahan formatPhone use karo
+        phone: formatPhone(form.whatsapp),
         password: form.password
       };
+
+      console.log(payload)
 
       await postData('/auth/signup', payload);
       router.push(`/verify-otp?number=${formatPhone(form.whatsapp)}`);
@@ -138,49 +138,29 @@ export default function SignUp() {
             />
             {errors.email && <p className="text-red-500 text-xs">{errors.email}</p>}
           </div>
-
-          {/* Country */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Country</label>
-            <Select
-              options={countryOptions}
-              value={countryOptions.find(opt => opt.label === form.country)}
-              onChange={option => setForm({ ...form, country: option?.label || '' })}
-              classNamePrefix="react-select"
-              getOptionLabel={getOptionLabel}
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  backgroundColor: '#374151',
-                  borderColor: '#4b5563',
-                  color: '#fff',
-                  borderRadius: '0.5rem',
-                  minHeight: '48px',
-                }),
-                singleValue: (base) => ({ ...base, color: '#fff' }),
-                menu: (base) => ({ ...base, backgroundColor: '#374151', color: '#fff' }),
-                option: (base, state) => ({
-                  ...base,
-                  backgroundColor: state.isFocused ? '#2563eb' : '#374151',
-                  color: '#fff',
-                }),
-                input: (base) => ({ ...base, color: '#fff' }),
-              }}
-            />
-            {errors.country && <p className="text-red-500 text-xs">{errors.country}</p>}
-          </div>
-
-          {/* WhatsApp */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
-            <input
-              name="whatsapp"
-              placeholder="Enter your WhatsApp number"
+            <PhoneInput
               value={form.whatsapp}
-              onChange={handleChange}
-              required
-              className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400 autofill:bg-gray-700"
+              onChange={(value) => setForm({ ...form, whatsapp: value })}
+              country="in"
+              enableSearch
+              enableLongNumbers={15}
+              placeholder="Enter mobile no."
+              inputStyle={{
+                width: '100%',
+                height: '40px',
+                background: 'transparent',
+                borderRadius: '4px',
+                paddingLeft: '50px',
+                color: 'white'
+              }}
+              buttonStyle={{
+                background: 'transparent'
+              }}
+              dropdownStyle={{ background: 'white', color: 'black' }}
             />
+
             {errors.whatsapp && <p className="text-red-500 text-xs">{errors.whatsapp}</p>}
           </div>
 

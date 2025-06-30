@@ -25,9 +25,9 @@ export default function VerifyOtp() {
         otp,
       });
 
-      if (response?.status === 'success' || response?.token) {
+      if (response?.status === 'verified' || response?.token) {
         // Token mil gaya to dashboard bhej do
-        router.push('/dashboard');
+        router.push('/');
       } else {
         // API ne success nai bola
         setError('Invalid OTP or verification failed');

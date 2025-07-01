@@ -71,7 +71,7 @@ export default function SignUp() {
         <div className="bg-gray-800 p-8 text-center border-b border-gray-700">
           <h1 className="text-3xl font-bold text-white">YoForex AI</h1>
           <p className="text-gray-400 mt-2 text-sm">
-            One account to access all DeepSeek services
+            Sign up yourself to get access
           </p>
         </div>
 
@@ -200,7 +200,7 @@ export default function SignUp() {
         <div className="px-6 py-4 bg-gray-800 border-t border-gray-700 text-center">
           <p className="text-sm text-gray-400">
             Already have an account?{' '}
-            <a href="/auth/login" className="text-blue-400 font-medium hover:underline">
+            <a href="/signIn" className="text-blue-400 font-medium hover:underline">
               Log in
             </a>
           </p>

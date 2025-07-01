@@ -2,24 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-// import Select from 'react-select';
-import countryList from 'react-select-country-list';
-import ReactCountryFlag from 'react-country-flag';
 import { postData } from '../../../utils/api';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import "./page.css"
-
-const countryOptions = countryList().getData();
-
-function getOptionLabel(option: any) {
-  return (
-    <span className="flex items-center gap-2">
-      <ReactCountryFlag countryCode={option.value} svg style={{ width: '1.2em', height: '1.2em' }} />
-      {option.label}
-    </span>
-  );
-}
 
 function formatPhone(phone: string) {
   if (phone.startsWith('+')) return phone;
@@ -60,8 +46,6 @@ export default function SignUp() {
         phone: formatPhone(form.whatsapp),
         password: form.password
       };
-
-      console.log(payload)
 
       await postData('/auth/signup', payload);
       router.push(`/verify-otp?number=${formatPhone(form.whatsapp)}`);

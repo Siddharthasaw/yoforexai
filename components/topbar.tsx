@@ -13,8 +13,41 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { getData, postData } from '@/utils/api';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export function Topbar() {
+
+  const router = useRouter()
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getData("/auth/profile");
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+
+        if ((error as any).response?.status === 401) {
+          router.push("/signIn");
+        }
+
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const onHandleLogout = async () => {
+    const response = await postData("/auth/logout", "")
+    if (response.status === "logged_out") {
+      router.push("/signIn")
+    }
+  }
+
+
   return (
     <header className="bg-slate-900/50 border-b border-slate-800 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -35,7 +68,7 @@ export function Topbar() {
             <Plus className="h-4 w-4 mr-2" />
             New Trade
           </Button>
-          
+
           <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
             <Upload className="h-4 w-4 mr-2" />
             Upload Chart
@@ -67,8 +100,8 @@ export function Topbar() {
             <DropdownMenuContent className="w-56 bg-slate-800 border-slate-700" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none text-white">Alex Chen</p>
-                  <p className="text-xs leading-none text-slate-400">alex.chen@example.com</p>
+                  <p className="text-sm font-medium leading-none text-white">{user?.name || "Loading..."}</p>
+                  <p className="text-xs leading-none text-slate-400">{user?.email || "Loading..."}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-700" />
@@ -82,7 +115,7 @@ export function Topbar() {
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-700" />
-              <DropdownMenuItem className="text-slate-300 hover:bg-slate-700">
+              <DropdownMenuItem className="text-slate-300 hover:bg-slate-700" onClick={() => onHandleLogout()}>
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>

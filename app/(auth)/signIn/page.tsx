@@ -5,31 +5,7 @@ import 'react-phone-input-2/lib/material.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import "../signUp/page.css"
-
-async function postData(url: string, data: any) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  });
-
-  let result;
-  try {
-    result = await res.json();
-  } catch (e) {
-    throw new Error('Invalid server response');
-  }
-
-  if (!res.ok) {
-    const error = new Error(result.message || 'API Error');
-    (error as any).response = result;
-    throw error;
-  }
-
-  return result;
-}
+import { postData } from '@/utils/api';
 
 export default function SignIn() {
   const router = useRouter();

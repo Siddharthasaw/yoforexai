@@ -26,6 +26,7 @@ export function Topbar() {
     const fetchData = async () => {
       try {
         const data = await getData("/auth/profile");
+        console.log(data)
         setUser(data);
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -42,6 +43,7 @@ export function Topbar() {
 
   const onHandleLogout = async () => {
     const response = await postData("/auth/logout", "")
+    console.log(response.status)
     if (response.status === "logged_out") {
       router.push("/signIn")
     }

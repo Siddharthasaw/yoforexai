@@ -72,9 +72,13 @@ const communityPosts = [
   },
 ];
 
+type User = {
+  name: string;
+};
+
 export default function Dashboard() {
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -1,4 +1,4 @@
-// File: C:\Users\aitra\Desktop\yoforexai\app\(dashboard)\scalp\page.tsx
+// File: /home/yoforexai-frontend/app/(dashboard)/scalp/page.tsx
 import * as entry from '../../../../../app/(dashboard)/scalp/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

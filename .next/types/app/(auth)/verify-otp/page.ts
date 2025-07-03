@@ -1,4 +1,4 @@
-// File: C:\Users\aitra\Desktop\yoforexai\app\(auth)\verify-otp\page.tsx
+// File: /home/yoforexai-frontend/app/(auth)/verify-otp/page.tsx
 import * as entry from '../../../../../app/(auth)/verify-otp/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

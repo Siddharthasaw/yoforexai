@@ -1,4 +1,4 @@
-// File: C:\Users\aitra\Desktop\yoforexai\app\(auth)\signIn\page.tsx
+// File: /home/yoforexai-frontend/app/(auth)/signIn/page.tsx
 import * as entry from '../../../../../app/(auth)/signIn/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

@@ -26,20 +26,20 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
   { name: 'Swing Trading', href: '/swing', icon: TrendingUp },
   { name: 'Scalp Trading', href: '/scalp', icon: Zap },
-  { name: 'AI Analysis', href: '/analysis', icon: Brain },
-  { name: 'Active Trades', href: '/active-trades', icon: Activity },
-  { name: 'Alerts', href: '/alerts', icon: Bell },
+  // { name: 'AI Analysis', href: '/analysis', icon: Brain },
+  // { name: 'Active Trades', href: '/active-trades', icon: Activity },
+  // { name: 'Alerts', href: '/alerts', icon: Bell },
   { name: 'Trade History', href: '/history', icon: History },
-  { name: 'Trade Journal', href: '/journal', icon: BookOpen },
-  { name: 'Learning Center', href: '/learning', icon: GraduationCap },
-  { name: 'Creator Hub', href: '/creator-hub', icon: Users },
-  { name: 'Support', href: '/support', icon: HelpCircle },
+  // { name: 'Trade Journal', href: '/journal', icon: BookOpen },
+  // { name: 'Learning Center', href: '/learning', icon: GraduationCap },
+  // { name: 'Creator Hub', href: '/creator-hub', icon: Users },
+  // { name: 'Support', href: '/support', icon: HelpCircle },
 ];
 
-const bottomNavigation = [
-  { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Support', href: '/support', icon: LifeBuoy },
-];
+// const bottomNavigation = [
+//   { name: 'Settings', href: '/settings', icon: Settings },
+//   { name: 'Support', href: '/support', icon: LifeBuoy },
+// ];
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
@@ -96,7 +96,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="px-2 py-4 border-t border-slate-800 space-y-1">
+      {/* <div className="px-2 py-4 border-t border-slate-800 space-y-1">
         {bottomNavigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -120,7 +120,7 @@ export function Sidebar() {
             </Link>
           );
         })}
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -53,18 +53,18 @@ export function Topbar() {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4 flex-1">
           {/* Search */}
-          <div className="relative max-w-md w-full">
+          {/* <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
               placeholder="Search..."
               className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-slate-400"
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center space-x-4">
           {/* Action Buttons */}
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+          {/* <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />
             New Trade
           </Button>
@@ -72,20 +72,20 @@ export function Topbar() {
           <Button size="sm" variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800">
             <Upload className="h-4 w-4 mr-2" />
             Upload Chart
-          </Button>
+          </Button> */}
 
           {/* Refresh Button */}
-          <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800">
+          {/* <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800">
             <RefreshCw className="h-4 w-4" />
-          </Button>
+          </Button> */}
 
           {/* Notifications */}
-          <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800 relative">
+          {/* <Button size="sm" variant="ghost" className="text-slate-300 hover:bg-slate-800 relative">
             <Bell className="h-4 w-4" />
             <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center bg-red-600 text-xs">
               3
             </Badge>
-          </Button>
+          </Button> */}
 
           {/* User Menu */}
           <DropdownMenu>

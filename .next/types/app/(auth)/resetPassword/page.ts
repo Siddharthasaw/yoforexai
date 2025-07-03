@@ -1,4 +1,4 @@
-// File: C:\Users\aitra\Desktop\yoforexai\app\(auth)\resetPassword\page.tsx
+// File: /home/yoforexai-frontend/app/(auth)/resetPassword/page.tsx
 import * as entry from '../../../../../app/(auth)/resetPassword/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

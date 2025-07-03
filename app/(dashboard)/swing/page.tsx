@@ -10,9 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target } from 'lucide-react';
+import { ChangeEvent } from 'react';
 
 const chartRequirements = [
-  { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for swing trading analysis', completed: true },
+  { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for Swing trading analysis', completed: true },
   { id: 2, title: 'Indicators', description: 'Include key indicators (MA, RSI, MACD) if used', completed: true },
   { id: 3, title: 'Price History', description: 'Show at least 50-100 candles for context', completed: true },
   { id: 4, title: 'Clear View', description: 'Ensure chart is clearly visible with good contrast', completed: true },
@@ -44,15 +45,41 @@ const analysisGuides = [
 
 const TIMEFRAMES = ['H1', 'W1', 'D1'];
 
+
+type Timeframe = 'H1' | 'W1' | 'D1';
+
+interface AnalysisResult {
+  signal: 'BUY' | 'SELL';
+  confidence: number | string;
+  timeframe?: Timeframe;
+  entry: number;
+  stop_loss: number;
+  take_profit: number;
+  risk_reward_ratio: number | string;
+  dynamic_stop_loss?: number;
+  dynamic_take_profit?: number;
+  technical_analysis?: {
+    RSI?: number | string;
+    MACD?: number | string;
+    Moving_Average?: number | string;
+    ICT_Order_Block?: string;
+    ICT_Fair_Value_Gap?: string;
+    ICT_Breaker_Block?: string;
+    ICT_Trendline?: string;
+  };
+  recommendation?: string;
+}
+
 export default function SwingTrading() {
+
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState(null);
-  const [error, setError] = useState(null);
-  const [serverError, setServerError] = useState(null)
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe | ''>('');
 
   // Calculator state
   const [calculatorData, setCalculatorData] = useState({
@@ -65,7 +92,7 @@ export default function SwingTrading() {
     tradeType: 'BUY'
   });
 
-  const handleDrag = (e) => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -75,7 +102,7 @@ export default function SwingTrading() {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -86,14 +113,14 @@ export default function SwingTrading() {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files[0]) {
       handleFileSelection(files[0]);
     }
   };
 
-  const handleFileSelection = (file) => {
+  const handleFileSelection = (file: File) => {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
@@ -113,7 +140,7 @@ export default function SwingTrading() {
 
   const calculatePositionSize = () => {
     const riskAmount = (calculatorData.accountBalance * calculatorData.riskPercentage) / 100;
-    const pipValue = 10; // Simplified pip value for EUR/USD
+    const pipValue = 10;
     const stopLossPips = Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
     const positionSize = riskAmount / (stopLossPips * pipValue);
 
@@ -131,8 +158,13 @@ export default function SwingTrading() {
     };
   };
 
-  const handleAnalyze = async (timeframe, file) => {
+
+  const handleAnalyze = async (
+    timeframe: Timeframe,
+    file: File | null
+  ): Promise<void> => {
     if (!file) return;
+
     setIsAnalyzing(true);
     setError(null);
     setAnalysisResults(null);
@@ -144,27 +176,28 @@ export default function SwingTrading() {
 
       const response = await fetch(
         `https://backend.axiontrust.com/swing/chart/?timeframe=${timeframe}`,
-        {
-          method: 'POST',
-          body: formData,
-        }
+        { method: 'POST', body: formData }
       );
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'API request failed');
+        throw new Error(await response.text() || 'API request failed');
       }
 
       const data = await response.json();
+
+      console.log(data)
+
       if (data?.error) {
-        setServerError(data?.error);
+        console.log(data)
+        setServerError(data.error as string);
       } else {
-        setServerError(null)
+        setServerError(null);
         setAnalysisResults(data);
       }
-
-    } catch (err) {
-      setError('Failed to analyze chart. ' + (err?.message || ''));
+    } catch (err: unknown) {
+      console.log(err)
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Failed to analyze chart. ${message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -178,7 +211,7 @@ export default function SwingTrading() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Swing Trading</h1>
-          <p className="text-slate-400">H4, D1, W1 Timeframes</p>
+          <p className="text-slate-400">H1, W1, D1 Timeframes</p>
         </div>
         <div className="flex space-x-3">
           <Button variant="outline" className="border-slate-600 text-slate-300">
@@ -372,7 +405,7 @@ export default function SwingTrading() {
                     Upload your trading chart in JPG, PNG or GIF format. For best results, ensure all indicators are clearly visible.
                   </p>
                   <div className="flex justify-center space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input').click()}>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input')?.click()}  >
                       <Upload className="h-4 w-4 mr-2" />
                       Browse Files
                     </Button>
@@ -399,7 +432,9 @@ export default function SwingTrading() {
                   <select
                     className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
                     value={selectedTimeframe || ''}
-                    onChange={e => setSelectedTimeframe(e.target.value)}
+                    onChange={e =>
+                      setSelectedTimeframe(e.target.value as Timeframe | '')
+                    }
                   >
                     <option value="">Choose timeframe</option>
                     {
@@ -408,8 +443,8 @@ export default function SwingTrading() {
                   </select>
                   <Button
                     className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
-                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || error}
-                    onClick={() => handleAnalyze(selectedTimeframe, selectedFile)}
+                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || !!error}
+                    onClick={() => handleAnalyze(selectedTimeframe as Timeframe, selectedFile)}
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Execute'}
                   </Button>
@@ -589,7 +624,7 @@ export default function SwingTrading() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-white">Swing Trading Analysis Guide</CardTitle>
-                <p className="text-slate-400 text-sm">Learn the key components of effective swing trading analysis</p>
+                <p className="text-slate-400 text-sm">Learn the key components of effective Swing trading analysis</p>
               </div>
               <Button variant="outline" size="sm" className="border-slate-600 text-blue-400">
                 View Full Guide

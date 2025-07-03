@@ -17,10 +17,16 @@ import { getData, postData } from '@/utils/api';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+
+type User = {
+  name: string;
+  email: string;
+};
+
 export function Topbar() {
 
   const router = useRouter()
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {

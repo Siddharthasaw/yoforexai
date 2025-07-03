@@ -1,373 +1,108 @@
-// 'use client';
+'use client';
 
-// import React, { useState } from 'react';
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import { Button } from '@/components/ui/button';
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// import { Input } from '@/components/ui/input';
-// import { Label } from '@/components/ui/label';
-// import { Badge } from '@/components/ui/badge';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-// import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-// import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target } from 'lucide-react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target } from 'lucide-react';
+import { ChangeEvent } from 'react';
 
-// const chartRequirements = [
-//   { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for Scalp trading analysis', completed: true },
-//   { id: 2, title: 'Indicators', description: 'Include key indicators (MA, RSI, MACD) if used', completed: true },
-//   { id: 3, title: 'Price History', description: 'Show at least 50-100 candles for context', completed: true },
-//   { id: 4, title: 'Clear View', description: 'Ensure chart is clearly visible with good contrast', completed: true },
-// ];
-
-// const recentUploads = [
-//   { pair: 'EUR/USD D1', time: 'Today, 10:32 AM', status: 'analyzed' },
-//   { pair: 'GBP/JPY H4', time: 'Yesterday, 3:15 PM', status: 'analyzed' },
-//   { pair: 'USD/CAD W1', time: 'Jun 10, 2023', status: 'analyzed' },
-// ];
-
-// const analysisGuides = [
-//   {
-//     icon: TrendingUp,
-//     title: 'Market Structure',
-//     description: 'Identify key support/resistance levels and market structure for potential trade setups.',
-//   },
-//   {
-//     icon: TrendingUp,
-//     title: 'Trend Analysis',
-//     description: 'Determine the current trend direction using multiple timeframe analysis.',
-//   },
-//   {
-//     icon: TrendingUp,
-//     title: 'Entry & Exit Points',
-//     description: 'Define precise entry triggers, stop loss and take profit levels for optimal risk/reward.',
-//   },
-// ];
-
-// const TIMEFRAMES = ['M1', 'M5', 'M15', "M30", "H1"];
-
-// export default function ScalpTrading() {
-//   const [dragActive, setDragActive] = useState(false);
-//   const [selectedFile, setSelectedFile] = useState(null);
-//   const [isAnalyzing, setIsAnalyzing] = useState(false);
-//   const [analysisResults, setAnalysisResults] = useState(null);
-//   const [error, setError] = useState(null);
-//   const [serverError, setServerError] = useState(null)
-//   const [showCalculator, setShowCalculator] = useState(false);
-//   const [selectedTimeframe, setSelectedTimeframe] = useState("");
-
-//   // Calculator state
-//   const [calculatorData, setCalculatorData] = useState({
-//     accountBalance: 10000,
-//     riskPercentage: 2,
-//     currencyPair: 'EUR/USD',
-//     entryPrice: 1.0892,
-//     stopLoss: 1.0850,
-//     takeProfit: 1.0950,
-//     tradeType: 'BUY'
-//   });
-
-//   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     if (e.type === 'dragenter' || e.type === 'dragover') {
-//       setDragActive(true);
-//     } else if (e.type === 'dragleave') {
-//       setDragActive(false);
-//     }
-//   };
-
-//   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     setDragActive(false);
-
-//     const files = e.dataTransfer.files;
-//     if (files && files[0]) {
-//       handleFileSelection(files[0]);
-//     }
-//   };
-
-//   const handleFileChange = (e) => {
-//     const files = e.target.files;
-//     if (files && files[0]) {
-//       handleFileSelection(files[0]);
-//     }
-//   };
-
-//   const handleFileSelection = (file) => {
-//     // Validate file type
-//     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-//     if (!validTypes.includes(file.type)) {
-//       setError('Please upload a valid image file (JPG, PNG, or GIF)');
-//       return;
-//     }
-
-//     // Validate file size (max 5MB)
-//     if (file.size > 5 * 1024 * 1024) {
-//       setError('File size must be less than 5MB');
-//       return;
-//     }
-
-//     setSelectedFile(file);
-//     setError(null);
-//   };
-
-//   const calculatePositionSize = () => {
-//     const riskAmount = (calculatorData.accountBalance * calculatorData.riskPercentage) / 100;
-//     const pipValue = 10; // Simplified pip value for EUR/USD
-//     const stopLossPips = Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
-//     const positionSize = riskAmount / (stopLossPips * pipValue);
-
-//     const takeProfitPips = Math.abs(calculatorData.takeProfit - calculatorData.entryPrice) * 10000;
-//     const riskReward = takeProfitPips / stopLossPips;
-//     const potentialProfit = riskAmount * riskReward;
-
-//     return {
-//       positionSize: positionSize.toFixed(2),
-//       riskAmount: riskAmount.toFixed(2),
-//       riskReward: riskReward.toFixed(2),
-//       potentialProfit: potentialProfit.toFixed(2),
-//       stopLossPips: stopLossPips.toFixed(0),
-//       takeProfitPips: takeProfitPips.toFixed(0)
-//     };
-//   };
-
-//   const handleAnalyze = async (timeframe, file) => {
-//     if (!file) return;
-//     setIsAnalyzing(true);
-//     setError(null);
-//     setAnalysisResults(null);
-//     setSelectedTimeframe(timeframe);
-
-//     try {
-//       const formData = new FormData();
-//       formData.append('file', file);
-
-//       const response = await fetch(
-//         `https://backend.axiontrust.com/scalp/chart/?timeframe=${timeframe}`,
-//         {
-//           method: 'POST',
-//           body: formData,
-//         }
-//       );
-
-//       if (!response.ok) {
-//         const errText = await response.text();
-//         throw new Error(errText || 'API request failed');
-//       }
-
-//       const data = await response.json();
-//       if (data?.error) {
-//         setServerError(data?.error);
-//       } else {
-//         setServerError(null)
-//         setAnalysisResults(data);
-//       }
-
-//     } catch (err) {
-//       setError('Failed to analyze chart. ' + (err?.message || ''));
-//     } finally {
-//       setIsAnalyzing(false);
-//     }
-//   };
-
-//   const calculationResults = calculatePositionSize();
-
-
-"use client";
-
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Upload,
-  Camera,
-  History,
-  Calculator,
-  TrendingUp,
-  CheckCircle,
-  ExternalLink,
-  AlertCircle,
-} from "lucide-react";
-
-/** ----------------------------
- * Local Types & Constants
- * ---------------------------*/
-
-interface ChartRequirement {
-  id: number;
-  title: string;
-  description: string;
-  completed: boolean;
-}
-
-interface RecentUpload {
-  pair: string;
-  time: string;
-  status: "analyzed" | "pending";
-}
-
-interface AnalysisGuide {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-}
-
-// The structure returned by your API (adjust if fields differ)
-interface TechnicalAnalysis {
-  RSI?: string;
-  MACD?: string;
-  Moving_Average?: string;
-  ICT_Order_Block?: string;
-  ICT_Fair_Value_Gap?: string;
-  ICT_Breaker_Block?: string;
-  ICT_Trendline?: string;
-}
-
-interface AnalysisResults {
-  signal: "BUY" | "SELL";
-  confidence: string | number;
-  timeframe?: string;
-  entry: string | number;
-  stop_loss: string | number;
-  take_profit: string | number;
-  risk_reward_ratio: string | number;
-  dynamic_stop_loss?: string | number;
-  dynamic_take_profit?: string | number;
-  technical_analysis?: TechnicalAnalysis;
-  recommendation: string;
-}
-
-interface CalculatorData {
-  accountBalance: number;
-  riskPercentage: number;
-  currencyPair: string;
-  entryPrice: number;
-  stopLoss: number;
-  takeProfit: number;
-  tradeType: "BUY" | "SELL";
-}
-
-const chartRequirements: ChartRequirement[] = [
-  {
-    id: 1,
-    title: "Timeframe",
-    description: "Use H4, D1, or W1 for Scalp trading analysis",
-    completed: true,
-  },
-  {
-    id: 2,
-    title: "Indicators",
-    description: "Include key indicators (MA, RSI, MACD) if used",
-    completed: true,
-  },
-  {
-    id: 3,
-    title: "Price History",
-    description: "Show at least 50-100 candles for context",
-    completed: true,
-  },
-  {
-    id: 4,
-    title: "Clear View",
-    description: "Ensure chart is clearly visible with good contrast",
-    completed: true,
-  },
+const chartRequirements = [
+  { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for Scalp trading analysis', completed: true },
+  { id: 2, title: 'Indicators', description: 'Include key indicators (MA, RSI, MACD) if used', completed: true },
+  { id: 3, title: 'Price History', description: 'Show at least 50-100 candles for context', completed: true },
+  { id: 4, title: 'Clear View', description: 'Ensure chart is clearly visible with good contrast', completed: true },
 ];
 
-const recentUploads: RecentUpload[] = [
-  { pair: "EUR/USD D1", time: "Today, 10:32 AM", status: "analyzed" },
-  { pair: "GBP/JPY H4", time: "Yesterday, 3:15 PM", status: "analyzed" },
-  { pair: "USD/CAD W1", time: "Jun 10, 2023", status: "analyzed" },
+const recentUploads = [
+  { pair: 'EUR/USD D1', time: 'Today, 10:32 AM', status: 'analyzed' },
+  { pair: 'GBP/JPY H4', time: 'Yesterday, 3:15 PM', status: 'analyzed' },
+  { pair: 'USD/CAD W1', time: 'Jun 10, 2023', status: 'analyzed' },
 ];
 
-const analysisGuides: AnalysisGuide[] = [
+const analysisGuides = [
   {
     icon: TrendingUp,
-    title: "Market Structure",
-    description:
-      "Identify key support/resistance levels and market structure for potential trade setups.",
+    title: 'Market Structure',
+    description: 'Identify key support/resistance levels and market structure for potential trade setups.',
   },
   {
     icon: TrendingUp,
-    title: "Trend Analysis",
-    description: "Determine the current trend direction using multiple timeframe analysis.",
+    title: 'Trend Analysis',
+    description: 'Determine the current trend direction using multiple timeframe analysis.',
   },
   {
     icon: TrendingUp,
-    title: "Entry & Exit Points",
-    description:
-      "Define precise entry triggers, stop loss and take profit levels for optimal risk/reward.",
+    title: 'Entry & Exit Points',
+    description: 'Define precise entry triggers, stop loss and take profit levels for optimal risk/reward.',
   },
 ];
 
-const TIMEFRAMES = ["M1", "M5", "M15", "M30", "H1"] as const;
+const TIMEFRAMES = ['M1', 'M5', 'M15', "M30", "H1"];
 
-/** ----------------------------
- * Component
- * ---------------------------*/
+
+type Timeframe = 'M1' | 'M5' | 'M15' | 'M30' | 'H1';
+
+interface AnalysisResult {
+  signal: 'BUY' | 'SELL';
+  confidence: number | string;
+  timeframe?: Timeframe;
+  entry: number;
+  stop_loss: number;
+  take_profit: number;
+  risk_reward_ratio: number | string;
+  dynamic_stop_loss?: number;
+  dynamic_take_profit?: number;
+  technical_analysis?: {
+    RSI?: number | string;
+    MACD?: number | string;
+    Moving_Average?: number | string;
+    ICT_Order_Block?: string;
+    ICT_Fair_Value_Gap?: string;
+    ICT_Breaker_Block?: string;
+    ICT_Trendline?: string;
+  };
+  recommendation?: string;
+}
+
 export default function ScalpTrading() {
-  /** -------------- state -------------- */
+
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] =
-    useState<AnalysisResults | null>(null);
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe | ''>('');
 
-  const [calculatorData, setCalculatorData] = useState<CalculatorData>({
+  // Calculator state
+  const [calculatorData, setCalculatorData] = useState({
     accountBalance: 10000,
     riskPercentage: 2,
-    currencyPair: "EUR/USD",
+    currencyPair: 'EUR/USD',
     entryPrice: 1.0892,
     stopLoss: 1.0850,
     takeProfit: 1.0950,
-    tradeType: "BUY",
+    tradeType: 'BUY'
   });
 
-  /** -------------- helpers -------------- */
-  const handleDrag = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-
-    if (e.type === "dragenter" || e.type === "dragover") {
+    if (e.type === 'dragenter' || e.type === 'dragover') {
       setDragActive(true);
-    } else if (e.type === "dragleave") {
+    } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -378,25 +113,24 @@ export default function ScalpTrading() {
     }
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ): void => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files[0]) {
       handleFileSelection(files[0]);
     }
   };
 
-  const handleFileSelection = (file: File): void => {
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
-
+  const handleFileSelection = (file: File) => {
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
-      setError("Please upload a valid image file (JPG, PNG, or GIF)");
+      setError('Please upload a valid image file (JPG, PNG, or GIF)');
       return;
     }
 
+    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError("File size must be less than 5MB");
+      setError('File size must be less than 5MB');
       return;
     }
 
@@ -405,15 +139,12 @@ export default function ScalpTrading() {
   };
 
   const calculatePositionSize = () => {
-    const riskAmount =
-      (calculatorData.accountBalance * calculatorData.riskPercentage) / 100;
-    const pipValue = 10; // Simplified pip value for EUR/USD
-    const stopLossPips =
-      Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
+    const riskAmount = (calculatorData.accountBalance * calculatorData.riskPercentage) / 100;
+    const pipValue = 10;
+    const stopLossPips = Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
     const positionSize = riskAmount / (stopLossPips * pipValue);
 
-    const takeProfitPips =
-      Math.abs(calculatorData.takeProfit - calculatorData.entryPrice) * 10000;
+    const takeProfitPips = Math.abs(calculatorData.takeProfit - calculatorData.entryPrice) * 10000;
     const riskReward = takeProfitPips / stopLossPips;
     const potentialProfit = riskAmount * riskReward;
 
@@ -423,13 +154,14 @@ export default function ScalpTrading() {
       riskReward: riskReward.toFixed(2),
       potentialProfit: potentialProfit.toFixed(2),
       stopLossPips: stopLossPips.toFixed(0),
-      takeProfitPips: takeProfitPips.toFixed(0),
-    } as const;
+      takeProfitPips: takeProfitPips.toFixed(0)
+    };
   };
 
+
   const handleAnalyze = async (
-    timeframe: string,
-    file: File
+    timeframe: Timeframe,
+    file: File | null
   ): Promise<void> => {
     if (!file) return;
 
@@ -440,30 +172,29 @@ export default function ScalpTrading() {
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
 
       const response = await fetch(
         `https://backend.axiontrust.com/scalp/chart/?timeframe=${timeframe}`,
-        {
-          method: "POST",
-          body: formData,
-        }
+        { method: 'POST', body: formData }
       );
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || "API request failed");
+        // Grab plain-text error so the user sees
+        // the actual message returned by your API.
+        throw new Error(await response.text() || 'API request failed');
       }
 
-      const data: AnalysisResults | { error: string } = await response.json();
+      const data = await response.json();
 
-      if ((data as { error?: string }).error) {
-        setServerError((data as { error: string }).error);
+      if (data?.error) {
+        setServerError(data.error as string);   // ensure .error is a string
       } else {
         setServerError(null);
-        setAnalysisResults(data as AnalysisResults);
+        setAnalysisResults(data);               // <- give this a proper type later
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      // All caught errors are `unknown` now:
       const message = err instanceof Error ? err.message : String(err);
       setError(`Failed to analyze chart. ${message}`);
     } finally {
@@ -472,7 +203,6 @@ export default function ScalpTrading() {
   };
 
   const calculationResults = calculatePositionSize();
-
 
   return (
     <div className="space-y-6">
@@ -674,7 +404,7 @@ export default function ScalpTrading() {
                     Upload your trading chart in JPG, PNG or GIF format. For best results, ensure all indicators are clearly visible.
                   </p>
                   <div className="flex justify-center space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input').click()}>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input')?.click()}  >
                       <Upload className="h-4 w-4 mr-2" />
                       Browse Files
                     </Button>
@@ -701,7 +431,9 @@ export default function ScalpTrading() {
                   <select
                     className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
                     value={selectedTimeframe || ''}
-                    onChange={e => setSelectedTimeframe(e.target.value)}
+                    onChange={e =>
+                      setSelectedTimeframe(e.target.value as Timeframe | '')
+                    }
                   >
                     <option value="">Choose timeframe</option>
                     {
@@ -710,8 +442,8 @@ export default function ScalpTrading() {
                   </select>
                   <Button
                     className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
-                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || error}
-                    onClick={() => handleAnalyze(selectedTimeframe, selectedFile)}
+                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || !!error}
+                    onClick={() => handleAnalyze(selectedTimeframe as Timeframe, selectedFile)}
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Execute'}
                   </Button>

@@ -76,6 +76,7 @@ type User = {
   name: string;
 };
 
+
 export default function Dashboard() {
 
   const [user, setUser] = useState<User | null>(null);

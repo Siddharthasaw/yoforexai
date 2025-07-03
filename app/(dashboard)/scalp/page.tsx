@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target } from 'lucide-react';
+import { ChangeEvent } from 'react';
 
 const chartRequirements = [
   { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for Scalp trading analysis', completed: true },
@@ -44,15 +45,41 @@ const analysisGuides = [
 
 const TIMEFRAMES = ['M1', 'M5', 'M15', "M30", "H1"];
 
+
+type Timeframe = 'M1' | 'M5' | 'M15' | 'M30' | 'H1';
+
+interface AnalysisResult {
+  signal: 'BUY' | 'SELL';
+  confidence: number | string;
+  timeframe?: Timeframe;
+  entry: number;
+  stop_loss: number;
+  take_profit: number;
+  risk_reward_ratio: number | string;
+  dynamic_stop_loss?: number;
+  dynamic_take_profit?: number;
+  technical_analysis?: {
+    RSI?: number | string;
+    MACD?: number | string;
+    Moving_Average?: number | string;
+    ICT_Order_Block?: string;
+    ICT_Fair_Value_Gap?: string;
+    ICT_Breaker_Block?: string;
+    ICT_Trendline?: string;
+  };
+  recommendation?: string;
+}
+
 export default function ScalpTrading() {
+
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState(null);
-  const [error, setError] = useState(null);
-  const [serverError, setServerError] = useState(null)
+  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState("");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe | ''>('');
 
   // Calculator state
   const [calculatorData, setCalculatorData] = useState({
@@ -86,14 +113,14 @@ export default function ScalpTrading() {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files[0]) {
       handleFileSelection(files[0]);
     }
   };
 
-  const handleFileSelection = (file) => {
+  const handleFileSelection = (file: File) => {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (!validTypes.includes(file.type)) {
@@ -113,7 +140,7 @@ export default function ScalpTrading() {
 
   const calculatePositionSize = () => {
     const riskAmount = (calculatorData.accountBalance * calculatorData.riskPercentage) / 100;
-    const pipValue = 10; // Simplified pip value for EUR/USD
+    const pipValue = 10;
     const stopLossPips = Math.abs(calculatorData.entryPrice - calculatorData.stopLoss) * 10000;
     const positionSize = riskAmount / (stopLossPips * pipValue);
 
@@ -131,8 +158,13 @@ export default function ScalpTrading() {
     };
   };
 
-  const handleAnalyze = async (timeframe, file) => {
+
+  const handleAnalyze = async (
+    timeframe: Timeframe,
+    file: File | null
+  ): Promise<void> => {
     if (!file) return;
+
     setIsAnalyzing(true);
     setError(null);
     setAnalysisResults(null);
@@ -144,27 +176,27 @@ export default function ScalpTrading() {
 
       const response = await fetch(
         `https://backend.axiontrust.com/scalp/chart/?timeframe=${timeframe}`,
-        {
-          method: 'POST',
-          body: formData,
-        }
+        { method: 'POST', body: formData }
       );
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(errText || 'API request failed');
+        // Grab plain-text error so the user sees
+        // the actual message returned by your API.
+        throw new Error(await response.text() || 'API request failed');
       }
 
       const data = await response.json();
-      if (data?.error) {
-        setServerError(data?.error);
-      } else {
-        setServerError(null)
-        setAnalysisResults(data);
-      }
 
-    } catch (err) {
-      setError('Failed to analyze chart. ' + (err?.message || ''));
+      if (data?.error) {
+        setServerError(data.error as string);   // ensure .error is a string
+      } else {
+        setServerError(null);
+        setAnalysisResults(data);               // <- give this a proper type later
+      }
+    } catch (err: unknown) {
+      // All caught errors are `unknown` now:
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Failed to analyze chart. ${message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -372,7 +404,7 @@ export default function ScalpTrading() {
                     Upload your trading chart in JPG, PNG or GIF format. For best results, ensure all indicators are clearly visible.
                   </p>
                   <div className="flex justify-center space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input').click()}>
+                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input')?.click()}  >
                       <Upload className="h-4 w-4 mr-2" />
                       Browse Files
                     </Button>
@@ -399,7 +431,9 @@ export default function ScalpTrading() {
                   <select
                     className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
                     value={selectedTimeframe || ''}
-                    onChange={e => setSelectedTimeframe(e.target.value)}
+                    onChange={e =>
+                      setSelectedTimeframe(e.target.value as Timeframe | '')
+                    }
                   >
                     <option value="">Choose timeframe</option>
                     {
@@ -408,8 +442,8 @@ export default function ScalpTrading() {
                   </select>
                   <Button
                     className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
-                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || error}
-                    onClick={() => handleAnalyze(selectedTimeframe, selectedFile)}
+                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || !!error}
+                    onClick={() => handleAnalyze(selectedTimeframe as Timeframe, selectedFile)}
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Execute'}
                   </Button>

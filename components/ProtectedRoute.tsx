@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getData } from "@/utils/api";
-import Loading from "./Loading";
+import Loading from "../app/(dashboard)/Loading";
 
 export default function ProtectedRoute({
   children,

@@ -100,7 +100,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Good morning, {user?.name || "Loading..."}</h1>
-          <p className="text-slate-400">Monday, June 14, 2023</p>
+          {/* <p className="text-slate-400">Monday, June 14, 2023</p> */}
         </div>
       </div>
 

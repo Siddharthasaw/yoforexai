@@ -1,66 +1,72 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import PhoneInput from 'react-phone-input-2';
+import 'react-phone-input-2/lib/material.css';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { postData } from '../../../utils/api';
+import "../signUp/page.css"
 
-export default function VerifyOtp() {
-  const searchParams = useSearchParams();
+export default function ForgetPassword() {
   const router = useRouter();
-  const number = searchParams.get('number') || '';
-  const [otp, setOtp] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
 
-    try {
-      const phone = `+${number.replace(/\D/g, '')}`;
-
-      const response = await postData('/auth/verify-signup-otp', {
-        phone,
-        otp,
-      });
-
-      if (response?.status === 'verified' || response?.token) {
-        // Token mil gaya to dashboard bhej do
-        router.push('/signIn');
+  const showError = (err: any) => {
+    let msg = err.message;
+    if (err?.response?.detail) {
+      if (Array.isArray(err.response.detail)) {
+        msg = err.response.detail.map((d: any) => d.msg).join(', ');
       } else {
-        // API ne success nai bola
-        setError('Invalid OTP or verification failed');
+        msg = err.response.detail;
+      }
+    }
+    setError(msg);
+  };
+
+  const handleRequestOtp = async () => {
+
+    setError('');
+    if (!whatsapp.trim()) {
+      setError('Field required');
+      return;
+    }
+    if (whatsapp.length < 6 || whatsapp.length > 15) {
+      setError('Please enter a valid mobile number');
+      return;
+    }
+    setLoading(true);
+    try {
+      const number = whatsapp.includes("+") ? whatsapp : "+" + whatsapp
+      const response = await postData('/auth/request-password-reset', {
+        phone: number
+      });
+      if (response?.status === "otp_sent") {
+        router.push(`/resetPassword?number=${number}`);
       }
     } catch (err: any) {
-      let msg = err.message;
-      if (err?.response?.detail) {
-        if (Array.isArray(err.response.detail)) {
-          msg = err.response.detail.map((d: any) => d.msg).join(', ');
-        } else if (typeof err.response.detail === 'string') {
-          msg = err.response.detail;
-        }
-      }
-      setError(msg);
+      showError(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex items-center justify-center mt-[5rem]">
       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-700 mx-4 my-8">
         <div className="bg-gray-800 p-8 text-center border-b border-gray-700">
-          <h1 className="text-3xl font-bold text-white">Verify OTP</h1>
-          <p className="text-gray-400 mt-2 text-sm">
+          <h1 className="text-3xl font-bold text-white">Forget password</h1>
+          {/* <p className="text-gray-400 mt-2 text-sm">
             Enter the 6-digit code sent to your WhatsApp ending with {number?.slice(-4)}
-          </p>
+          </p> */}
         </div>
 
-        <form onSubmit={handleVerify} className="p-6 space-y-5">
+        <form onSubmit={(e) => { e.preventDefault(); handleRequestOtp(); }} className="p-6 space-y-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">OTP Code</label>
-            <input
+            <label className="text-sm font-medium text-gray-300">Whatsapp number</label>
+            {/* <input
               type="text"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
@@ -68,6 +74,26 @@ export default function VerifyOtp() {
               maxLength={6}
               required
               className="w-full p-3 bg-gray-700 border border-gray-600 text-white rounded-lg placeholder-gray-400"
+            /> */}
+            <PhoneInput
+              value={whatsapp}
+              onChange={(value) => setWhatsapp(value)}
+              country="in"
+              enableSearch
+              enableLongNumbers={15}
+              placeholder="Enter mobile no."
+              inputStyle={{
+                width: '100%',
+                height: '40px',
+                background: 'transparent',
+                borderRadius: '4px',
+                paddingLeft: '50px',
+                color: 'white'
+              }}
+              buttonStyle={{
+                background: 'transparent'
+              }}
+              dropdownStyle={{ background: 'white', color: 'black' }}
             />
             {error && (
               <div className="flex items-center gap-2 bg-red-600/10 border border-red-500 text-red-200 px-4 py-3 rounded-lg mb-2 animate-shake">
@@ -91,18 +117,18 @@ export default function VerifyOtp() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Verifying...
+                Loading...
               </>
             ) : (
-              'Verify & Continue'
+              'Continue'
             )}
           </button>
         </form>
 
         <div className="px-6 py-4 bg-gray-800 border-t border-gray-700 text-center">
           <p className="text-sm text-gray-400">
-            Wrong number?{' '}
-            <a href="/auth/signIn" className="text-blue-400 font-medium hover:underline">
+            {/* Wrong number?{' '} */}
+            <a href="/signIn" className="text-blue-400 font-medium hover:underline">
               Go back to login
             </a>
           </p>
@@ -111,5 +137,3 @@ export default function VerifyOtp() {
     </div>
   );
 }
-
-

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, TrendingDown, DollarSign, Target, Calculator, Brain, Bell, BarChart, ArrowUpRight, ArrowDownRight, Calendar, MapPin } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart as RechartsBarChart, Bar } from 'recharts';
+import { useState, useEffect } from 'react';
+import { getData } from '@/utils/api';
 
 const currencyPairs = [
   { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
@@ -71,12 +73,28 @@ const communityPosts = [
 ];
 
 export default function Dashboard() {
+
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getData("/auth/profile");
+        setUser(data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Good morning, Alex</h1>
+          <h1 className="text-3xl font-bold text-white">Good morning, {user?.name || "Loading..."}</h1>
           <p className="text-slate-400">Monday, June 14, 2023</p>
         </div>
       </div>
@@ -88,9 +106,8 @@ export default function Dashboard() {
             <CardContent className="p-3">
               <div className="font-medium text-white text-sm">{currency.pair}</div>
               <div className="text-lg font-bold text-white">{currency.price}</div>
-              <div className={`text-xs flex items-center ${
-                currency.positive ? 'text-green-400' : 'text-red-400'
-              }`}>
+              <div className={`text-xs flex items-center ${currency.positive ? 'text-green-400' : 'text-red-400'
+                }`}>
                 {currency.positive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
                 {currency.change}
               </div>
@@ -289,14 +306,14 @@ export default function Dashboard() {
                 USD is showing strength against major pairs today due to positive economic data. Consider this in your trade planning.
               </p>
             </div>
-            
+
             <div className="p-3 rounded-lg bg-orange-900/30 border border-orange-800">
               <h4 className="font-medium text-white mb-2">Risk Management Reminder</h4>
               <p className="text-sm text-slate-300">
                 Never risk more than 2% of your account on a single trade. Your suggested max position size today: $240.
               </p>
             </div>
-            
+
             <div className="p-3 rounded-lg bg-green-900/30 border border-green-800">
               <h4 className="font-medium text-white mb-2">Market Events</h4>
               <div className="space-y-2 text-sm">

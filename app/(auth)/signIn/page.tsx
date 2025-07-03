@@ -5,31 +5,7 @@ import 'react-phone-input-2/lib/material.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import "../signUp/page.css"
-
-async function postData(url: string, data: any) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  });
-
-  let result;
-  try {
-    result = await res.json();
-  } catch (e) {
-    throw new Error('Invalid server response');
-  }
-
-  if (!res.ok) {
-    const error = new Error(result.message || 'API Error');
-    (error as any).response = result;
-    throw error;
-  }
-
-  return result;
-}
+import { postData } from '@/utils/api';
 
 export default function SignIn() {
   const router = useRouter();
@@ -68,7 +44,7 @@ export default function SignIn() {
     }
     setLoading(true);
     try {
-      await postData('https://backend.axiontrust.com/auth/login/request-otp', {
+      await postData('/auth/login/request-otp', {
         phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp
       });
       setStep('verify');
@@ -83,7 +59,7 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
-      const response = await postData('https://backend.axiontrust.com/auth/login/verify-otp', {
+      const response = await postData('/auth/login/verify-otp', {
         phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp,
         otp
       });
@@ -109,7 +85,7 @@ export default function SignIn() {
     setLoading(true);
     setError('');
     try {
-      const response = await postData('https://backend.axiontrust.com/auth/login/email', { email, password });
+      const response = await postData('/auth/login/email', { email, password });
       if (response?.token || response?.status === 'success' || response?.status === 'login_successful') {
         router.push('/');
       } else {
@@ -153,8 +129,6 @@ export default function SignIn() {
                   <label className="text-sm font-medium text-gray-300">WhatsApp Number</label>
                   <div className="flex items-center space-x-2">
                     <PhoneInput
-                      // value={form.whatsapp}
-                      // onChange={(value) => setForm({ ...form, whatsapp: value })}
                       value={whatsapp}
                       onChange={(value) => setWhatsapp(value)}
                       country="in"
@@ -167,7 +141,7 @@ export default function SignIn() {
                         background: 'transparent',
                         borderRadius: '4px',
                         paddingLeft: '50px',
-                        color: 'white' // 👈 optional for white text
+                        color: 'white'
                       }}
                       buttonStyle={{
                         background: 'transparent'
@@ -251,6 +225,7 @@ export default function SignIn() {
                     </svg>
                   )}
                 </button>
+                <a href="/forgetPassword">Forget password</a>
               </div>
 
               {error && <p className="text-xs text-red-400">{error}</p>}

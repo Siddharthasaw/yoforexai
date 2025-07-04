@@ -1,12 +1,4 @@
 {
-  "/_not-found": "app/_not-found.js",
   "/(dashboard)/page": "app/(dashboard)/page.js",
-  "/(auth)/forgetPassword/page": "app/(auth)/forgetPassword/page.js",
-  "/(auth)/resetPassword/page": "app/(auth)/resetPassword/page.js",
-  "/(auth)/signIn/page": "app/(auth)/signIn/page.js",
-  "/(auth)/signUp/page": "app/(auth)/signUp/page.js",
-  "/(auth)/verify-otp/page": "app/(auth)/verify-otp/page.js",
-  "/(dashboard)/history/page": "app/(dashboard)/history/page.js",
-  "/(dashboard)/scalp/page": "app/(dashboard)/scalp/page.js",
-  "/(dashboard)/swing/page": "app/(dashboard)/swing/page.js"
+  "/(auth)/signIn/page": "app/(auth)/signIn/page.js"
 }

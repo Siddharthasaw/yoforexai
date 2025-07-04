@@ -1,4 +1,4 @@
-// File: /home/yoforexai-frontend/app/(dashboard)/page.tsx
+// File: C:\Users\aitra\Desktop\yoforexai\app\(dashboard)\page.tsx
 import * as entry from '../../../../app/(dashboard)/page.js'
 import type { ResolvingMetadata } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

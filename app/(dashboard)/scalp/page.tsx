@@ -207,12 +207,12 @@ export default function ScalpTrading() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-[2rem] lg:gap-0 lg:flex-row items-center lg:justify-between">
+        <div className="w-full lg:w-auto flex flex-col flex-start">
           <h1 className="text-3xl font-bold text-white">Scalp Trading</h1>
           <p className="text-slate-400">M1, M5, M15, M30, H1 Timeframes</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="w-full flex-wrap lg:w-auto flex flex-start gap-3">
           <Button variant="outline" className="border-slate-600 text-slate-300">
             <History className="h-4 w-4 mr-2" />
             History
@@ -365,7 +365,7 @@ export default function ScalpTrading() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="upload" className="space-y-6">
-        <TabsList className="bg-slate-800 border-slate-700">
+        <TabsList className="bg-slate-800 border-slate-700 flex flex-wrap lg:inline-block">
           <TabsTrigger value="upload">Chart Upload</TabsTrigger>
           <TabsTrigger value="guide">Analysis Guide</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
@@ -408,10 +408,10 @@ export default function ScalpTrading() {
                       <Upload className="h-4 w-4 mr-2" />
                       Browse Files
                     </Button>
-                    <Button variant="outline" className="border-slate-600 text-slate-300">
+                    {/* <Button variant="outline" className="border-slate-600 text-slate-300">
                       <Camera className="h-4 w-4 mr-2" />
                       Take Screenshot
-                    </Button>
+                    </Button> */}
                   </div>
                   <p className="text-xs text-slate-500 mt-3">
                     Supported formats: PNG, JPG, GIF (Max 5MB)

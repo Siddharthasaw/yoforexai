@@ -249,12 +249,15 @@ export function Sidebar() {
       )} */}
 
       {isMobile && (
-        <button
-          onClick={() => setDrawerOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-md bg-slate-900 text-white shadow-md"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
+        <div className="py-4 ml-4 fixed flex justify-center items-center gap-[1.2rem] z-50 p-2 rounded-md text-white shadow-md">
+          <button onClick={() => setDrawerOpen(true)}>
+            <Menu className="h-6 w-6" />
+          </button>
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="h-6 w-6 text-blue-500" />
+            <span className="text-lg font-bold text-white">YoForex AI</span>
+          </div>
+        </div>
       )}
 
 

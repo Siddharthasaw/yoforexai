@@ -1,8 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
-import { postData } from '../../../utils/api';
+import { useEffect, useState } from 'react';
+import { authAPI } from '@/utils/api';
 
 export default function VerifyOtp() {
   const searchParams = useSearchParams();
@@ -12,36 +12,61 @@ export default function VerifyOtp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Format phone number to ensure it has a + prefix
+  const formatPhoneNumber = (phone: string) => {
+    const digits = phone.replace(/\D/g, '');
+    return phone.startsWith('+') ? phone : `+${digits}`;
+  };
+
+  // Handle OTP verification
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    if (!otp || otp.length < 4) {
+      setError('Please enter a valid OTP');
+      return;
+    }
+    
     setError('');
     setLoading(true);
 
     try {
-      const phone = `+${number.replace(/\D/g, '')}`;
+      const phone = formatPhoneNumber(number);
+      const response = await authAPI.verifyLoginOtp({ phone, otp });
+      // console.log(response);
 
-      const response = await postData('/auth/verify-signup-otp', {
-        phone,
-        otp,
-      });
-
-      if (response?.status === 'verified' || response?.token) {
-        // Token mil gaya to dashboard bhej do
-        router.push('/signIn');
+      // Check for successful verification
+      if (response?.status === 'login_successful' || response?.token) {
+        // Store the token if received
+        if (response?.token) {
+          // Store the token in local storage or cookies
+          localStorage.setItem('authToken', response.token);
+          // Set a flag to indicate user is authenticated
+          localStorage.setItem('isAuthenticated', 'true');
+          // Redirect to dashboard after successful verification
+          router.push('/dashboard');
+        } else {
+          // If no token but verification is successful, redirect to login
+          router.push('/signIn');
+        }
       } else {
-        // API ne success nai bola
-        setError('Invalid OTP or verification failed');
+        setError(response?.message || 'Invalid OTP or verification failed');
       }
     } catch (err: any) {
-      let msg = err.message;
-      if (err?.response?.detail) {
-        if (Array.isArray(err.response.detail)) {
-          msg = err.response.detail.map((d: any) => d.msg).join(', ');
-        } else if (typeof err.response.detail === 'string') {
-          msg = err.response.detail;
-        }
+      // Handle API errors
+      let errorMessage = 'Verification failed. Please try again.';
+      
+      if (err?.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        errorMessage = Array.isArray(detail) 
+          ? detail.map((d: any) => d.msg || d).join(', ')
+          : detail;
+      } else if (err.message) {
+        errorMessage = err.message;
       }
-      setError(msg);
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

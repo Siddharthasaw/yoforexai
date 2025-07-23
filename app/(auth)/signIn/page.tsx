@@ -5,7 +5,7 @@ import 'react-phone-input-2/lib/material.css';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import "../signUp/page.css"
-import { postData } from '@/utils/api';
+import { authAPI } from '@/utils/api';
 
 export default function SignIn() {
   const router = useRouter();
@@ -32,22 +32,34 @@ export default function SignIn() {
   };
 
   const handleRequestOtp = async () => {
-
     setError('');
     if (!whatsapp.trim()) {
-      setError('Field required');
+      setError('Phone number is required');
       return;
     }
-    if (whatsapp.length < 6 || whatsapp.length > 15) {
-      setError('Please enter a valid mobile number');
+    
+    // Ensure the phone number is in E.164 format
+    let phoneNumber = whatsapp.startsWith('+') ? whatsapp : `+${whatsapp}`;
+    
+    // Remove any non-digit characters except the leading +
+    phoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    
+    // Basic validation for phone number length (including country code)
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      setError('Please enter a valid mobile number with country code');
       return;
     }
+    
     setLoading(true);
     try {
-      await postData('/auth/login/request-otp', {
-        phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp
-      });
-      setStep('verify');
+      const response = await authAPI.requestOtp({ phone: phoneNumber });
+      // console.log(response);
+      
+      if (response?.status === 'success' || response?.success) {
+        setStep('verify');
+      } else {
+        setError('Failed to send OTP. Please try again.');
+      }
     } catch (err: any) {
       showError(err);
     } finally {
@@ -56,23 +68,31 @@ export default function SignIn() {
   };
 
   const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      setError('OTP is required');
+      return;
+    }
+    
+    // Format phone number consistently with requestOtp
+    let phoneNumber = whatsapp.startsWith('+') ? whatsapp : `+${whatsapp}`;
+    phoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    
     setLoading(true);
     setError('');
     try {
-      const response = await postData('/auth/login/verify-otp', {
-        phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp,
-        otp
-      });
+      const response = await authAPI.verifyLoginOtp({ phone: phoneNumber, otp });
 
-      if (
-        response?.token ||
-        response?.status === 'success' ||
-        response?.status === 'login_successful' ||
-        response?.status === 'verified'
-      ) {
-        router.push('/');
+      // Check for successful login response
+      if (response?.token || response?.status === 'success' || 
+          response?.status === 'login_successful' || response?.status === 'verified') {
+        // Store the token if received
+        if (response.token) {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('isAuthenticated', 'true');
+        }
+        router.push('/dashboard');
       } else {
-        setError('OTP verification failed or account not found.');
+        setError('OTP verification failed. Please try again.');
       }
     } catch (err: any) {
       showError(err);
@@ -82,14 +102,25 @@ export default function SignIn() {
   };
 
   const handleEmailLogin = async () => {
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     try {
-      const response = await postData('/auth/login/email', { email, password });
+      const response = await authAPI.loginWithEmail({ email, password });
+      
       if (response?.token || response?.status === 'success' || response?.status === 'login_successful') {
-        router.push('/');
+        // Store the token if received
+        if (response.token) {
+          localStorage.setItem('authToken', response.token);
+          localStorage.setItem('isAuthenticated', 'true');
+        }
+        router.push('/dashboard');
       } else {
-        setError('Invalid credentials');
+        setError('Invalid email or password');
       }
     } catch (err: any) {
       showError(err);

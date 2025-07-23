@@ -3,95 +3,234 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { authAPI } from '@/utils/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TrendingUp, TrendingDown, DollarSign, Target, Calculator, Brain, Bell, BarChart, ArrowUpRight, ArrowDownRight, Calendar, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Target, Calculator, Brain, Bell, BarChart, ArrowUpRight, ArrowDownRight, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart as RechartsBarChart, Bar } from 'recharts';
 import { useState, useEffect } from 'react';
-import { getData } from '@/utils/api';
+import { marketAPI, tradingAPI, newsAPI, forumAPI } from '@/utils/api';
+import { useRouter } from 'next/navigation';
 
-const currencyPairs = [
-  { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
-  { pair: 'GBP/USD', price: '1.2754', change: '-0.12%', positive: false },
-  { pair: 'USD/JPY', price: '138.92', change: '+0.23%', positive: true },
-  { pair: 'AUD/USD', price: '0.6598', change: '+0.08%', positive: true },
-  { pair: 'USD/CAD', price: '1.3465', change: '-0.03%', positive: false },
-];
+// Types
+type CurrencyPair = {
+  pair: string;
+  price: string;
+  change: string;
+  positive: boolean;
+};
 
-const swingData = [
-  { name: 'Jan', value: 12 },
-  { name: 'Feb', value: 19 },
-  { name: 'Mar', value: 15 },
-  { name: 'Apr', value: 25 },
-  { name: 'May', value: 22 },
-  { name: 'Jun', value: 30 },
-];
+type PerformanceData = {
+  day: string;
+  value: number;
+};
 
-const scalpData = [
-  { name: 'Jan', value: 8 },
-  { name: 'Feb', value: 14 },
-  { name: 'Mar', value: 12 },
-  { name: 'Apr', value: 18 },
-  { name: 'May', value: 16 },
-  { name: 'Jun', value: 21 },
-];
+type NewsItem = {
+  id: string;
+  title: string;
+  summary: string;
+  published_at: string;
+  source: string;
+};
 
-const performanceData = [
-  { day: 'Mon', value: 100 },
-  { day: 'Tue', value: 150 },
-  { day: 'Wed', value: -50 },
-  { day: 'Thu', value: 180 },
-  { day: 'Fri', value: 120 },
-  { day: 'Sat', value: 250 },
-  { day: 'Sun', value: 140 },
-];
-
-const communityPosts = [
-  {
-    author: 'Michael R.',
-    time: '2 hours ago',
-    content: 'Just closed a EUR/USD long position with 2.3% profit! The AI analysis was spot on with the reversal point.',
-    likes: 24,
-    replies: 8,
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
-  },
-  {
-    author: 'Sarah K.',
-    time: '5 hours ago',
-    content: 'Anyone else watching GBP/JPY? The 4H chart is showing a potential double top pattern.',
-    likes: 17,
-    replies: 12,
-    avatar: 'https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
-  },
-  {
-    author: 'David W.',
-    time: 'Yesterday',
-    content: 'The new scalping module is incredible! Hit 5 successful trades today with an average of 0.5% each. Love the precision.',
-    likes: 32,
-    replies: 6,
-    avatar: 'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
-  },
-];
+type ForumPost = {
+  id: string;
+  author: string;
+  content: string;
+  likes: number;
+  comments: number;
+  timeAgo: string;
+  time?: string;
+  replies?: number;
+  avatar?: string;
+};
 
 type User = {
   name: string;
 };
 
-
 export default function Dashboard() {
-
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
   const [user, setUser] = useState<User | null>(null);
 
+  // State for API data
+  const [currencyPairs, setCurrencyPairs] = useState<CurrencyPair[]>([]);
+  const [swingData, setSwingData] = useState<{ name: string, value: number }[]>([]);
+  const [scalpData, setScalpData] = useState<{ name: string, value: number }[]>([]);
+  const [performanceData, setPerformanceData] = useState<PerformanceData[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [communityPosts, setCommunityPosts] = useState<ForumPost[]>([]);
+
+  // Sample data for fallback
+  const sampleCurrencyPairs: CurrencyPair[] = [
+    { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
+    { pair: 'GBP/USD', price: '1.2754', change: '-0.12%', positive: false },
+    { pair: 'USD/JPY', price: '138.92', change: '+0.23%', positive: true },
+    { pair: 'AUD/USD', price: '0.6598', change: '+0.08%', positive: true },
+    { pair: 'USD/CAD', price: '1.3465', change: '-0.03%', positive: false },
+  ];
+
+  const samplePerformanceData: PerformanceData[] = [
+    { day: 'Mon', value: 100 },
+    { day: 'Tue', value: 150 },
+    { day: 'Wed', value: -50 },
+    { day: 'Thu', value: 180 },
+    { day: 'Fri', value: 120 },
+    { day: 'Sat', value: 250 },
+    { day: 'Sun', value: 140 },
+  ];
+
+  const sampleSwingData = [
+    { name: 'Jan', value: 12 },
+    { name: 'Feb', value: 19 },
+    { name: 'Mar', value: 15 },
+    { name: 'Apr', value: 25 },
+    { name: 'May', value: 22 },
+    { name: 'Jun', value: 30 },
+  ];
+
+  const sampleScalpData = [
+    { name: 'Jan', value: 8 },
+    { name: 'Feb', value: 14 },
+    { name: 'Mar', value: 12 },
+    { name: 'Apr', value: 18 },
+    { name: 'May', value: 16 },
+    { name: 'Jun', value: 21 },
+  ];
+
+  const sampleCommunityPosts: ForumPost[] = [
+    {
+      id: '1',
+      author: 'Michael R.',
+      timeAgo: '2 hours ago',
+      content: 'Just closed a EUR/USD long position with 2.3% profit! The AI analysis was spot on with the reversal point.',
+      likes: 24,
+      comments: 7,
+      avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
+    },
+    {
+      id: '2',
+      author: 'Sarah K.',
+      timeAgo: '5 hours ago',
+      content: 'Has anyone else noticed the strong resistance level on GBP/JPY? Thinking about going short if it bounces again.',
+      likes: 15,
+      comments: 9,
+      avatar: 'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
+    },
+    {
+      id: '3',
+      author: 'David L.',
+      timeAgo: '1 day ago',
+      content: 'The market sentiment indicator is showing extreme fear - could be a good buying opportunity for some major pairs.',
+      likes: 32,
+      comments: 14,
+      avatar: 'https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=32&h=32&dpr=2'
+    }
+  ];
+
+  // Fetch all data on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getData("/auth/profile");
-        setUser(data);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
+        setLoading(true);
+
+        // Fetch all data in parallel with proper error handling
+        const [pairs, performance, swing, scalp, latestNews, posts] = await Promise.all([
+          marketAPI.getCurrencyPairs().catch((err) => {
+            console.error('Error fetching currency pairs:', err);
+            return sampleCurrencyPairs;
+          }),
+          marketAPI.getPerformanceData().catch((err) => {
+            console.error('Error fetching performance data:', err);
+            return samplePerformanceData;
+          }),
+          tradingAPI.getSwingHistory(6).catch((err) => {
+            console.error('Error fetching swing data:', err);
+            return sampleSwingData;
+          }),
+          tradingAPI.getScalpHistory(6).catch((err) => {
+            console.error('Error fetching scalp data:', err);
+            return sampleScalpData;
+          }),
+          newsAPI.getNews().catch((err) => {
+            console.error('Error fetching news:', err);
+            return [];
+          }),
+          forumAPI.getPosts().catch((err) => {
+            console.error('Error fetching forum posts:', err);
+            return [];
+          })
+        ]);
+
+        setCurrencyPairs(Array.isArray(pairs) ? pairs : sampleCurrencyPairs);
+        setPerformanceData(Array.isArray(performance) ? performance : samplePerformanceData);
+        setSwingData(Array.isArray(swing) ? swing : sampleSwingData);
+        setScalpData(Array.isArray(scalp) ? scalp : sampleScalpData);
+        setNews(Array.isArray(latestNews) ? latestNews : []);
+        setCommunityPosts(Array.isArray(posts) && posts.length > 0 ? posts : sampleCommunityPosts);
+
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError('Failed to load dashboard data. Using sample data instead.');
+        // Set sample data as fallback
+        setCurrencyPairs(sampleCurrencyPairs);
+        setPerformanceData(samplePerformanceData);
+        setSwingData(sampleSwingData);
+        setScalpData(sampleScalpData);
+        setNews([]);
+        setCommunityPosts(sampleCommunityPosts);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
+  }, []);
+
+  // Format currency pair data
+  const formatCurrencyPairs = (pairs: any[]): CurrencyPair[] => {
+    if (!Array.isArray(pairs)) return sampleCurrencyPairs;
+    
+    return pairs.map(pair => {
+      // If the pair is already in the correct format, return it
+      if (pair.pair && pair.price && pair.change !== undefined) {
+        return {
+          pair: pair.pair,
+          price: typeof pair.price === 'number' ? pair.price.toFixed(4) : pair.price,
+          change: String(pair.change).startsWith('+') || String(pair.change).startsWith('-') 
+            ? pair.change 
+            : (pair.change >= 0 ? '+' : '') + pair.change + '%',
+          positive: pair.positive !== undefined ? pair.positive : pair.change >= 0
+        };
+      }
+      
+      // If it's in the API format, convert it
+      return {
+        pair: pair.symbol || pair.pair || 'N/A',
+        price: pair.price ? (typeof pair.price === 'number' ? pair.price.toFixed(4) : pair.price) : '0.0000',
+        change: pair.change !== undefined 
+          ? (typeof pair.change === 'number' 
+              ? (pair.change >= 0 ? '+' : '') + pair.change.toFixed(2) + '%' 
+              : pair.change)
+          : '0.00%',
+        positive: pair.positive !== undefined ? pair.positive : pair.change >= 0
+      };
+    });
+  };
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const profile = await authAPI.getProfile();
+        setUser(profile);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+    
+    fetchProfile();
   }, []);
 
   return (

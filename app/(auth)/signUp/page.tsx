@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { postData } from '../../../utils/api';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import "./page.css"
+import { authAPI } from '@/utils/api';
 
 function formatPhone(phone: string) {
   if (phone.startsWith('+')) return phone;
@@ -28,26 +28,44 @@ export default function SignUp() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!form.name.trim()) newErrors.name = "Full Name is required";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    if (!form.whatsapp.trim()) newErrors.whatsapp = "WhatsApp number is required";
+    if (!form.password) newErrors.password = "Password is required";
+    
+    // Additional validations
+    if (form.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long";
+    }
+    if (form.email && !/\S+@\S+\.\S+/.test(form.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let newErrors: { [key: string]: string } = {};
-    if (!form.name) newErrors.name = "Full Name is required";
-    if (!form.email) newErrors.email = "Email is required";
-    if (!form.whatsapp) newErrors.whatsapp = "WhatsApp number is required";
-    if (!form.password) newErrors.password = "Password is required";
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    
+    if (!validateForm()) {
+      return;
+    }
 
     setLoading(true);
+    setApiError('');
+    
     try {
       const payload = {
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
         phone: formatPhone(form.whatsapp),
         password: form.password
       };
 
-      await postData('/auth/signup', payload);
+      await authAPI.signup(payload);
       router.push(`/verify-otp?number=${formatPhone(form.whatsapp)}`);
     } catch (err: any) {
       let msg = err.message;

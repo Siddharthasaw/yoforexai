@@ -4,7 +4,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { postData } from '../../../utils/api';
+import { authAPI } from '@/utils/api';
 import "../signUp/page.css"
 
 export default function ForgetPassword() {
@@ -27,24 +27,29 @@ export default function ForgetPassword() {
   };
 
   const handleRequestOtp = async () => {
-
     setError('');
     if (!whatsapp.trim()) {
       setError('Field required');
       return;
     }
-    if (whatsapp.length < 6 || whatsapp.length > 15) {
-      setError('Please enter a valid mobile number');
+    
+    // Format phone number to E.164 format
+    let phoneNumber = whatsapp.startsWith('+') ? whatsapp : `+${whatsapp}`;
+    phoneNumber = phoneNumber.replace(/[^\d+]/g, '');
+    
+    // Basic validation for phone number length (including country code)
+    if (phoneNumber.length < 10 || phoneNumber.length > 15) {
+      setError('Please enter a valid mobile number with country code');
       return;
     }
+    
     setLoading(true);
     try {
-      const number = whatsapp.includes("+") ? whatsapp : "+" + whatsapp
-      const response = await postData('/auth/request-password-reset', {
-        phone: number
-      });
-      if (response?.status === "otp_sent") {
-        router.push(`/resetPassword?number=${number}`);
+      const response = await authAPI.forgotPassword({ phone: phoneNumber });
+      if (response?.status === "otp_sent" || response?.success) {
+        router.push(`/resetPassword?number=${encodeURIComponent(phoneNumber)}`);
+      } else {
+        setError('Failed to send OTP. Please try again.');
       }
     } catch (err: any) {
       showError(err);

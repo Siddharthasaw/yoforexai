@@ -10,13 +10,15 @@ import { useState, useEffect } from 'react';
 import { getData } from '@/utils/api';
 import TradingTips from "./components/TradingTips";
 
-const currencyPairs = [
-  { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
-  { pair: 'GBP/USD', price: '1.2754', change: '-0.12%', positive: false },
-  { pair: 'USD/JPY', price: '138.92', change: '+0.23%', positive: true },
-  { pair: 'AUD/USD', price: '0.6598', change: '+0.08%', positive: true },
-  { pair: 'USD/CAD', price: '1.3465', change: '-0.03%', positive: false },
-];
+import LivePriceTicker from "./components/LivePriceTicker";
+
+// const currencyPairs = [
+//   { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
+//   { pair: 'GBP/USD', price: '1.2754', change: '-0.12%', positive: false },
+//   { pair: 'USD/JPY', price: '138.92', change: '+0.23%', positive: true },
+//   { pair: 'AUD/USD', price: '0.6598', change: '+0.08%', positive: true },
+//   { pair: 'USD/CAD', price: '1.3465', change: '-0.03%', positive: false },
+// ];
 
 const swingData = [
   { name: 'Jan', value: 12 },
@@ -101,26 +103,11 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Good morning, {user?.name || "Loading..."}</h1>
-          {/* <p className="text-slate-400">Monday, June 14, 2023</p> */}
         </div>
       </div>
 
       {/* Currency Pairs */}
-      <div className="flex space-x-4 overflow-x-auto pb-2">
-        {currencyPairs.map((currency) => (
-          <Card key={currency.pair} className="flex-shrink-0 bg-slate-800/50 border-slate-700 min-w-[140px]">
-            <CardContent className="p-3">
-              <div className="font-medium text-white text-sm">{currency.pair}</div>
-              <div className="text-lg font-bold text-white">{currency.price}</div>
-              <div className={`text-xs flex items-center ${currency.positive ? 'text-green-400' : 'text-red-400'
-                }`}>
-                {currency.positive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                {currency.change}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <LivePriceTicker />
 
       {/* Trading Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -233,6 +220,12 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+
+
+    
+
+
+
         {/* Trading Tools */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
@@ -262,6 +255,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+
+
 
       {/* Community Feed and Trading Tips */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -296,10 +292,12 @@ export default function Dashboard() {
             ))}
           </CardContent>
         </Card>
-
-        {/* Trading Tips */}
+  {/* Trading Tips */}
         <TradingTips />
+        
       </div>
+
+      
     </div>
   );
 }

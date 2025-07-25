@@ -11,15 +11,17 @@ type NewsItem = {
 };
 
 const PAGE_SIZE = 4;
+const PAGINATION_WINDOW = 3;
 
 export default function TradingTips() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [windowStart, setWindowStart] = useState(1);
 
   useEffect(() => {
     setLoading(true);
-    fetch(`https://backend.axiontrust.com/news/?page=${page}&limit=${PAGE_SIZE}`)
+    fetch(`https://backend.axiontrust.com/news/news/?page=${page}&limit=${PAGE_SIZE}`)
       .then((res) => res.json())
       .then((data) => {
         // If API returns { results: [...] }
@@ -29,6 +31,11 @@ export default function TradingTips() {
       })
       .finally(() => setLoading(false));
   }, [page]);
+
+  // Pagination window logic
+  const handleNextWindow = () => setWindowStart(windowStart + PAGINATION_WINDOW);
+  const handlePrevWindow = () => setWindowStart(Math.max(1, windowStart - PAGINATION_WINDOW));
+  const handlePageClick = (p: number) => setPage(p);
 
   return (
     <Card className="bg-slate-800/50 border-slate-700">
@@ -87,28 +94,31 @@ export default function TradingTips() {
         {/* Pagination */}
         <div className="flex gap-2 pt-2">
           <button
-            className="px-2 py-1 rounded bg-slate-700 text-white text-xs disabled:opacity-50"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1}
+            className="px-2 py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-xs disabled:opacity-50"
+            onClick={handlePrevWindow}
+            disabled={windowStart === 1}
           >
             Prev
           </button>
-          {[...Array(3)].map((_, idx) => (
-            <button
-              key={idx}
-              className={`px-2 py-1 rounded text-xs ${
-                page === idx + 1
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-700 text-white"
-              }`}
-              onClick={() => setPage(idx + 1)}
-            >
-              {idx + 1}
-            </button>
-          ))}
+          {[...Array(PAGINATION_WINDOW)].map((_, idx) => {
+            const pageNum = windowStart + idx;
+            return (
+              <button
+                key={pageNum}
+                className={`px-2 py-1 rounded text-xs ${
+                  page === pageNum
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-700 text-white"
+                }`}
+                onClick={() => handlePageClick(pageNum)}
+              >
+                {pageNum}
+              </button>
+            );
+          })}
           <button
-            className="px-2 py-1 rounded bg-slate-700 text-white text-xs"
-            onClick={() => setPage((p) => p + 1)}
+            className="px-2 py-1 rounded bg-blue-700 hover:bg-blue-800 text-white text-xs"
+            onClick={handleNextWindow}
           >
             Next
           </button>

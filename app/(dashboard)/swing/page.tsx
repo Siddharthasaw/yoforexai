@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target } from 'lucide-react';
 import { ChangeEvent } from 'react';
+// import {
+//   Euro, PoundSterling, Yen, Bitcoin, Gem, BarChart2, Building2, Flame, Droplets, IndianRupee, Coins, ChevronRight
+// } from 'lucide-react';
 
 const chartRequirements = [
   { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for Swing trading analysis', completed: true },
@@ -27,26 +30,26 @@ const recentUploads = [
 
 const analysisGuides = [
   {
-    icon: TrendingUp,
+    icon: <TrendingUp className="w-4 h-4 text-blue-400" />,
     title: 'Market Structure',
     description: 'Identify key support/resistance levels and market structure for potential trade setups.',
   },
   {
-    icon: TrendingUp,
+    icon: <TrendingUp className="w-4 h-4 text-blue-400" />,
     title: 'Trend Analysis',
     description: 'Determine the current trend direction using multiple timeframe analysis.',
   },
   {
-    icon: TrendingUp,
+    icon: <TrendingUp className="w-4 h-4 text-blue-400" />,
     title: 'Entry & Exit Points',
     description: 'Define precise entry triggers, stop loss and take profit levels for optimal risk/reward.',
   },
 ];
 
-const TIMEFRAMES = ['H1', 'W1', 'D1'];
+const TIMEFRAMES = ['H1', 'H4', 'D1', 'W1'];
 
 
-type Timeframe = 'H1' | 'W1' | 'D1';
+type Timeframe = 'H1' | 'H4' | 'D1' | 'W1';
 
 interface AnalysisResult {
   signal: 'BUY' | 'SELL';
@@ -70,16 +73,100 @@ interface AnalysisResult {
   recommendation?: string;
 }
 
+const PAIR_CATEGORIES = [
+  {
+    label: "Forex",
+    pairs: [
+      { symbol: "FX_IDC:EURUSD", name: "EUR/USD" },
+      { symbol: "FX_IDC:GBPUSD", name: "GBP/USD" },
+      { symbol: "FX_IDC:USDJPY", name: "USD/JPY" },
+      { symbol: "FX_IDC:USDCHF", name: "USD/CHF" },
+      { symbol: "FX_IDC:USDCAD", name: "USD/CAD" },
+      { symbol: "FX_IDC:AUDUSD", name: "AUD/USD" },
+      { symbol: "FX_IDC:NZDUSD", name: "NZD/USD" },
+      { symbol: "FX_IDC:EURGBP", name: "EUR/GBP" },
+      { symbol: "FX_IDC:EURJPY", name: "EUR/JPY" },
+      { symbol: "FX_IDC:GBPJPY", name: "GBP/JPY" },
+      { symbol: "FX_IDC:AUDJPY", name: "AUD/JPY" },
+      { symbol: "FX_IDC:EURAUD", name: "EUR/AUD" },
+      { symbol: "FX_IDC:CHFJPY", name: "CHF/JPY" },
+      { symbol: "FX_IDC:USDTRY", name: "USD/TRY" },
+      { symbol: "FX_IDC:USDINR", name: "USD/INR" },
+      { symbol: "FX_IDC:USDZAR", name: "USD/ZAR" },
+      { symbol: "FX_IDC:EURTRY", name: "EUR/TRY" },
+      { symbol: "FX_IDC:USDSGD", name: "USD/SGD" },
+      { symbol: "FX_IDC:USDMXN", name: "USD/MXN" },
+    ],
+  },
+  {
+    label: "Crypto",
+    pairs: [
+      { symbol: "BINANCE:BTCUSDT", name: "BTC/USDT" },
+      { symbol: "BINANCE:BTCUSD", name: "BTC/USD" },
+      { symbol: "BINANCE:BTCETH", name: "BTC/ETH" },
+      { symbol: "BINANCE:BTCBNB", name: "BTC/BNB" },
+      { symbol: "BINANCE:BTCXRP", name: "BTC/XRP" },
+      { symbol: "BINANCE:ETHUSDT", name: "ETH/USDT" },
+      { symbol: "BINANCE:ETHUSD", name: "ETH/USD" },
+      { symbol: "BINANCE:ETHBTC", name: "ETH/BTC" },
+      { symbol: "BINANCE:SOLUSD", name: "SOL/USD" },
+      { symbol: "BINANCE:ADAUSD", name: "ADA/USD" },
+      { symbol: "BINANCE:DOGEUSD", name: "DOGE/USD" },
+      { symbol: "BINANCE:XRPUSD", name: "XRP/USD" },
+      { symbol: "BINANCE:LTCUSD", name: "LTC/USD" },
+      { symbol: "BINANCE:SHIBUSD", name: "SHIB/USD" },
+    ],
+  },
+  {
+    label: "Commodities",
+    pairs: [
+      { symbol: "TVC:GOLD", name: "XAU/USD" },
+      { symbol: "TVC:SILVER", name: "XAG/USD" },
+      { symbol: "TVC:PLATINUM", name: "XPT/USD" },
+      { symbol: "TVC:PALLADIUM", name: "XPD/USD" },
+      { symbol: "TVC:USOIL", name: "WTI/USD" },
+      { symbol: "TVC:UKOIL", name: "BRENT/USD" },
+      { symbol: "TVC:NGAS", name: "NGAS/USD" },
+    ],
+  },
+  {
+    label: "Indices",
+    pairs: [
+      { symbol: "OANDA:US30USD", name: "US30" },
+      { symbol: "OANDA:NAS100USD", name: "US100" },
+      { symbol: "OANDA:SPX500USD", name: "US500" },
+      { symbol: "OANDA:DE40EUR", name: "DE40" },
+      { symbol: "OANDA:UK100GBP", name: "UK100" },
+      { symbol: "OANDA:JP225USD", name: "JP225" },
+      { symbol: "OANDA:FR40EUR", name: "FR40" },
+    ],
+  },
+  {
+    label: "Stocks",
+    pairs: [
+      { symbol: "NASDAQ:AAPL", name: "AAPL" },
+      { symbol: "NASDAQ:TSLA", name: "TSLA" },
+      { symbol: "NASDAQ:META", name: "META" },
+      { symbol: "NASDAQ:AMZN", name: "AMZN" },
+      { symbol: "NASDAQ:MSFT", name: "MSFT" },
+      { symbol: "NASDAQ:GOOG", name: "GOOG" },
+    ],
+  },
+];
+
 export default function SwingTrading() {
 
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);;
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [showCalculator, setShowCalculator] = useState(false);
-  const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe | ''>('');
+  const [selectedPair, setSelectedPair] = useState(PAIR_CATEGORIES[0].pairs[0].symbol);
+  const [selectedTimeframe, setSelectedTimeframe] = useState('D1');
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   // Calculator state
   const [calculatorData, setCalculatorData] = useState({
@@ -167,7 +254,7 @@ export default function SwingTrading() {
 
     setIsAnalyzing(true);
     setError(null);
-    setAnalysisResults(null);
+    setAnalysisResult(null);
     setSelectedTimeframe(timeframe);
 
     try {
@@ -192,7 +279,7 @@ export default function SwingTrading() {
         setServerError(data.error as string);
       } else {
         setServerError(null);
-        setAnalysisResults(data);
+        setAnalysisResult(data);
       }
     } catch (err: unknown) {
       console.log(err)
@@ -203,7 +290,53 @@ export default function SwingTrading() {
     }
   };
 
+  const handleExecute = async () => {
+    setLoading(true);
+    setError(null);
+    setAnalysisResult(null);
+    try {
+      const res = await fetch(
+        `/api/swing-analyze?pair=${selectedPair}&timeframe=${selectedTimeframe}`
+      );
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      setAnalysisResult(data);
+    } catch (err) {
+      setError('Analysis failed. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calculationResults = calculatePositionSize();
+
+  useEffect(() => {
+    // TradingView widget load karne ke liye
+    const script = document.createElement('script');
+    script.src = 'https://s3.tradingview.com/tv.js';
+    script.async = true;
+    script.onload = () => {
+      // @ts-ignore
+      if (window.TradingView) {
+        // @ts-ignore
+        new window.TradingView.widget({
+          autosize: true,
+          symbol: selectedPair,
+          interval: selectedTimeframe,
+          container_id: 'tv_chart_container',
+          theme: 'dark',
+          style: '1',
+          locale: 'en',
+        });
+      }
+    };
+    document.getElementById('tv_chart_container')?.appendChild(script);
+    return () => {
+      // Cleanup
+      const chartDiv = document.getElementById('tv_chart_container');
+      if (chartDiv) chartDiv.innerHTML = '';
+    };
+  }, [selectedPair, selectedTimeframe]);
 
   return (
     <div className="space-y-6">
@@ -211,7 +344,7 @@ export default function SwingTrading() {
       <div className="flex flex-col gap-[2rem] lg:gap-0 lg:flex-row items-center lg:justify-between">
         <div className="w-full lg:w-auto flex flex-col flex-start">
           <h1 className="text-3xl font-bold text-white">Swing Trading</h1>
-          <p className="text-slate-400">H1, W1, D1 Timeframes</p>
+          <p className="text-slate-400">Live TradingView Chart | Select Pair & Timeframe</p>
         </div>
         <div className="w-full flex-wrap lg:w-auto flex flex-start gap-3">
           <Button variant="outline" className="border-slate-600 text-slate-300">
@@ -364,305 +497,87 @@ export default function SwingTrading() {
         </div>
       </div>
 
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="upload" className="space-y-6">
-        <TabsList className="bg-slate-800 border-slate-700">
-          <TabsTrigger value="upload">Chart Upload</TabsTrigger>
-          <TabsTrigger value="guide">Analysis Guide</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="upload" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Chart Upload Area */}
-            <Card className="lg:col-span-2 bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Upload Chart for Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(error || serverError) && (
-                  <div className="mb-4 p-3 rounded-lg bg-red-900/30 border border-red-800 flex items-center space-x-2">
-                    <AlertCircle className="h-4 w-4 text-red-400" />
-                    <span className="text-red-400 text-sm">{error || serverError}</span>
-                  </div>
-                )}
-
-                <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                    ? 'border-blue-500 bg-blue-500/10'
-                    : 'border-slate-600 hover:border-slate-500'
-                    }`}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                >
-                  <Upload className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-white mb-2">
-                    {selectedFile ? selectedFile.name : 'Drag & Drop Your Chart Here'}
-                  </h3>
-                  <p className="text-slate-400 mb-4">
-                    Upload your trading chart in JPG, PNG or GIF format. For best results, ensure all indicators are clearly visible.
-                  </p>
-                  <div className="flex justify-center space-x-3">
-                    <Button className="bg-blue-600 hover:bg-blue-700" onClick={() => document.getElementById('file-input')?.click()}  >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Browse Files
-                    </Button>
-                    {/* <Button variant="outline" className="border-slate-600 text-slate-300">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Take Screenshot
-                    </Button> */}
-                  </div>
-                  <p className="text-xs text-slate-500 mt-3">
-                    Supported formats: PNG, JPG, GIF (Max 5MB)
-                  </p>
-                  <input
-                    id="file-input"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
-
-                {/* Timeframe Dropdown & Execute Button */}
-                <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 justify-center">
-                  <Label className="text-white font-semibold">Select Timeframe:</Label>
-                  <select
-                    className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
-                    value={selectedTimeframe || ''}
-                    onChange={e =>
-                      setSelectedTimeframe(e.target.value as Timeframe | '')
-                    }
+      {/* Category Buttons with Dropdown */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        {PAIR_CATEGORIES.map((cat) => (
+          <div key={cat.label} className="relative">
+            <button
+              className="px-4 py-2 rounded bg-blue-900 text-white font-bold border border-blue-700"
+              onClick={() => setOpenCategory(openCategory === cat.label ? null : cat.label)}
+            >
+              {cat.label}
+            </button>
+            {openCategory === cat.label && (
+              <div className="absolute left-0 z-10 bg-slate-900 border border-slate-700 rounded mt-2 min-w-[180px] shadow-lg">
+                {cat.pairs.map((pair) => (
+                  <div
+                    key={pair.symbol}
+                    className={`px-4 py-2 cursor-pointer hover:bg-blue-800 ${selectedPair === pair.symbol ? 'bg-blue-600 text-white' : 'text-slate-200'}`}
+                    onClick={() => {
+                      setSelectedPair(pair.symbol);
+                      setOpenCategory(null);
+                    }}
                   >
-                    <option value="">Choose timeframe</option>
-                    {
-                      TIMEFRAMES.map((item, i) => <option value={item} key={i}>{item}</option>)
-                    }
-                  </select>
-                  <Button
-                    className="px-6 py-2 rounded bg-blue-600 text-white font-bold transition disabled:opacity-50 hover:bg-blue-700"
-                    disabled={!selectedFile || !selectedTimeframe || isAnalyzing || !!error}
-                    onClick={() => handleAnalyze(selectedTimeframe as Timeframe, selectedFile)}
-                  >
-                    {isAnalyzing ? 'Analyzing...' : 'Execute'}
-                  </Button>
-                </div>
-                {(!selectedFile || !selectedTimeframe) && (
-                  <div className="text-yellow-400 text-sm mt-2">
-                    Please upload a chart image and select a timeframe to enable analysis.
-                  </div>
-                )}
-
-                {isAnalyzing && (
-                  <div className="mt-4 p-4 rounded-lg bg-blue-900/30 border border-blue-800">
-                    <div className="flex items-center space-x-3">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
-                      <span className="text-blue-400">Analyzing your chart...</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Results */}
-                {analysisResults && (
-                  <div className="mt-6 space-y-4">
-                    <h3 className="text-lg font-medium text-white">Analysis Results</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Signal & Confidence */}
-                      <Card className="bg-slate-700/50 border-slate-600">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-slate-400">Signal</span>
-                            <Badge className={analysisResults.signal === 'BUY' ? 'bg-green-600' : 'bg-red-600'}>
-                              {analysisResults.signal}
-                            </Badge>
-                          </div>
-                          <div className="text-2xl font-bold text-white">
-                            {analysisResults.confidence}
-                            {String(analysisResults.confidence).includes('%') ? '' : '%'}
-                          </div>
-                          <div className="text-sm text-slate-400">Confidence</div>
-                          <div className="mt-2">
-                            <span className="text-blue-400 font-semibold">Timeframe:</span>
-                            <span className="ml-2 px-3 py-1 rounded bg-blue-900 text-blue-200 font-bold">
-                              {analysisResults.timeframe || selectedTimeframe}
-                            </span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                      {/* Entry, SL, TP, RR, Dynamic SL/TP */}
-                      <Card className="bg-slate-700/50 border-slate-600">
-                        <CardContent className="p-4">
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">Entry:</span>
-                              <span className="text-white">{analysisResults.entry}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">Stop Loss:</span>
-                              <span className="text-red-400">{analysisResults.stop_loss}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">Take Profit:</span>
-                              <span className="text-green-400">{analysisResults.take_profit}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-slate-400">Risk/Reward:</span>
-                              <span className="text-white">{analysisResults.risk_reward_ratio}</span>
-                            </div>
-                            {analysisResults.dynamic_stop_loss && (
-                              <div className="flex justify-between">
-                                <span className="text-slate-400">Dynamic Stop Loss:</span>
-                                <span className="text-red-300">{analysisResults.dynamic_stop_loss}</span>
-                              </div>
-                            )}
-                            {analysisResults.dynamic_take_profit && (
-                              <div className="flex justify-between">
-                                <span className="text-slate-400">Dynamic Take Profit:</span>
-                                <span className="text-green-300">{analysisResults.dynamic_take_profit}</span>
-                              </div>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    {/* Technical Analysis */}
-                    <Card className="bg-slate-700/50 border-slate-600">
-                      <CardContent className="p-4">
-                        <h4 className="font-medium text-white mb-2">Technical Analysis</h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">RSI:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.RSI}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">MACD:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.MACD}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">Moving Average:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.Moving_Average}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">ICT Order Block:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Order_Block}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">ICT Fair Value Gap:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Fair_Value_Gap}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">ICT Breaker Block:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Breaker_Block}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-400">ICT Trendline:</span>
-                            <span className="text-white">{analysisResults.technical_analysis?.ICT_Trendline}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    {/* Recommendation */}
-                    <Card className="bg-slate-700/50 border-slate-600">
-                      <CardContent className="p-4">
-                        <h4 className="font-medium text-white mb-2">Recommendation</h4>
-                        <p className="text-slate-300 text-sm">{analysisResults.recommendation}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Chart Requirements & Recent Uploads */}
-            <div className="space-y-6">
-              {/* Chart Requirements */}
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Chart Requirements</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {chartRequirements.map((req) => (
-                    <div key={req.id} className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <div className="font-medium text-white text-sm">{req.title}</div>
-                        <div className="text-xs text-slate-400">{req.description}</div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-
-              {/* Recent Uploads */}
-              <Card className="bg-slate-800/50 border-slate-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Uploads</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {recentUploads.map((upload, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 rounded bg-slate-700/30">
-                      <div>
-                        <div className="font-medium text-white text-sm">{upload.pair}</div>
-                        <div className="text-xs text-slate-400">{upload.time}</div>
-                      </div>
-                      <Button size="sm" variant="ghost" className="text-blue-400 hover:bg-slate-700">
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="guide" className="space-y-6">
-          {/* Analysis Guide */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-white">Swing Trading Analysis Guide</CardTitle>
-                <p className="text-slate-400 text-sm">Learn the key components of effective Swing trading analysis</p>
-              </div>
-              <Button variant="outline" size="sm" className="border-slate-600 text-blue-400">
-                View Full Guide
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {analysisGuides.map((guide, index) => (
-                  <div key={index} className="p-4 rounded-lg bg-slate-700/30 border border-slate-600">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="p-2 rounded-lg bg-blue-600/20">
-                        <guide.icon className="h-5 w-5 text-blue-400" />
-                      </div>
-                      <h3 className="font-medium text-white">{guide.title}</h3>
-                    </div>
-                    <p className="text-sm text-slate-300">{guide.description}</p>
+                    {pair.name}
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            )}
+          </div>
+        ))}
+      </div>
 
-        <TabsContent value="history" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Analysis History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <History className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                <p className="text-slate-400">Your analysis history will appear here</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      {/* Timeframe Selection & Execute */}
+      <div className="flex items-center gap-4 mb-4">
+        <label className="text-white font-semibold">Timeframe:</label>
+        <select
+          className="p-2 rounded bg-slate-800 text-white border border-slate-600 min-w-[120px]"
+          value={selectedTimeframe}
+          onChange={e => setSelectedTimeframe(e.target.value)}
+        >
+          <option value="">Select</option>
+          {TIMEFRAMES.map(tf => (
+            <option key={tf} value={tf}>{tf}</option>
+          ))}
+        </select>
+        <button
+          className="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          onClick={handleExecute}
+          disabled={!selectedTimeframe || loading}
+        >
+          {loading ? 'Loading...' : 'Execute'}
+        </button>
+      </div>
+
+      {/* TradingView Chart */}
+      <div id="tv_chart_container" style={{ height: 500 }}></div>
+
+      {analysisResult && (
+        <div className="mt-6 bg-slate-800 border border-blue-700 rounded-lg p-6 shadow-lg max-w-xl mx-auto">
+          <div className="flex items-center gap-4 mb-4">
+            <span className={`px-3 py-1 rounded-full text-white font-bold ${analysisResult.signal === 'BUY' ? 'bg-green-600' : 'bg-red-600'}`}>
+              {analysisResult.signal}
+            </span>
+            <span className="text-slate-300">Confidence: <b>{analysisResult.confidence}%</b></span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-slate-200">
+            <div>
+              <div>Entry: <b>{analysisResult.entry}</b></div>
+              <div>Stop Loss: <b>{analysisResult.stop_loss}</b></div>
+              <div>Take Profit: <b>{analysisResult.take_profit}</b></div>
+            </div>
+            <div>
+              <div>Risk/Reward: <b>{analysisResult.risk_reward_ratio}</b></div>
+              <div>Timeframe: <b>{analysisResult.timeframe}</b></div>
+            </div>
+          </div>
+          {analysisResult.recommendation && (
+            <div className="mt-4 p-3 bg-slate-900 rounded text-blue-300">
+              {analysisResult.recommendation}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

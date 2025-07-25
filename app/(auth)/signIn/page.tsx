@@ -44,11 +44,13 @@ export default function SignIn() {
     }
     setLoading(true);
     try {
-      await postData('/auth/login/request-otp', {
+      const response = await postData('/auth/login/request-otp', {
         phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp
       });
+      console.log(response)
       setStep('verify');
     } catch (err: any) {
+      console.log(err)
       showError(err);
     } finally {
       setLoading(false);
@@ -63,6 +65,8 @@ export default function SignIn() {
         phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp,
         otp
       });
+
+      console.log(response)
 
       if (
         response?.token ||

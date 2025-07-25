@@ -12,8 +12,8 @@ export async function postData(path: string, data: any) {
 
   if (!res.ok) {
     // Throw full error object so frontend can handle it
-    const error = new Error(result.message || 'API Error');
-    (error as any).response = result;
+    const error = new Error(result?.detail?.error || 'API Error');
+    (error as any).response = result?.detail?.error;
     throw error;
   }
 

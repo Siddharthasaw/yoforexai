@@ -11,6 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Upload, Camera, History, Calculator, TrendingUp, CheckCircle, ExternalLink, AlertCircle, DollarSign, Target, Zap, BarChart3, Brain, Shield, ArrowDown, ArrowUp, Activity, Info } from 'lucide-react';
 
+declare global {
+  interface Window {
+    TradingView?: any;
+  }
+}
+
 const chartRequirements = [
   { id: 1, title: 'Timeframe', description: 'Use H4, D1, or W1 for AI Trading Analysis analysis', completed: true },
   { id: 2, title: 'Indicators', description: 'Include key indicators (MA, RSI, MACD) if used', completed: true },
@@ -73,6 +79,8 @@ interface AnalysisResult {
   put_entry?: number;
   breakeven_upper?: number;
   breakeven_lower?: number;
+  strategy?: string;
+  aiModel?: string;
 }
 
 // Updated PAIR_CATEGORIES to include TradingView symbol format
@@ -555,6 +563,11 @@ export default function AiChartAnalysis() {
             </span>
           </div>
         ))}
+
+        {/* Debugging: Show all technical analysis data */}
+        <pre className="text-xs text-slate-500 whitespace-pre-wrap">
+          {JSON.stringify(analysisResult.technical_analysis, null, 2)}
+        </pre>
       </div>
     );
   };
@@ -959,7 +972,7 @@ export default function AiChartAnalysis() {
                     <button
                       className="mt-1 px-3 py-1 text-xs rounded bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold shadow hover:scale-105 transition"
                       onClick={() => {
-                        setOpenAIDropdown(null);
+                        setOpenAIDropdown(false);
                         setTimeout(() => {
                           proAiRef.current?.scrollIntoView({ behavior: 'smooth' });
                         }, 100);

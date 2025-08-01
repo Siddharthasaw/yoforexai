@@ -536,9 +536,9 @@ export default function AiChartAnalysis() {
   // Render technical analysis fields based on strategy
   const renderTechnicalAnalysis = () => {
     if (!analysisResult || !analysisResult.technical_analysis) return null;
-    
+
     const labels = TECHNICAL_ANALYSIS_LABELS[selectedStrategy as keyof typeof TECHNICAL_ANALYSIS_LABELS] || {};
-    
+
     return (
       <div className="space-y-4">
         {Object.entries(analysisResult.technical_analysis).map(([key, value]) => (
@@ -563,11 +563,6 @@ export default function AiChartAnalysis() {
             </span>
           </div>
         ))}
-
-        {/* Debugging: Show all technical analysis data */}
-        <pre className="text-xs text-slate-500 whitespace-pre-wrap">
-          {JSON.stringify(analysisResult.technical_analysis, null, 2)}
-        </pre>
       </div>
     );
   };

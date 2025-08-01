@@ -12,6 +12,7 @@ export async function postData(path: string, data: any) {
 
     const result = await res.json().catch(() => ({}));
 
+<<<<<<< HEAD
     if (!res.ok) {
       console.error(`API Error (${res.status}) at ${path}:`, result);
       const error = new Error(result.message || `API Error (${res.status})`);
@@ -26,6 +27,12 @@ export async function postData(path: string, data: any) {
     return result;
   } catch (error) {
     console.error(`Request failed for ${path}:`, error);
+=======
+  if (!res.ok) {
+    // Throw full error object so frontend can handle it
+    const error = new Error(result?.detail?.error || 'API Error');
+    (error as any).response = result?.detail?.error;
+>>>>>>> Siddharth
     throw error;
   }
 }
@@ -60,6 +67,7 @@ export async function getData(path: string) {
     console.error(`Request failed for ${path}:`, error);
     throw error;
   }
+<<<<<<< HEAD
 }
 
 export async function putData(path: string, data: any) {
@@ -254,3 +262,8 @@ export const toolsAPI = {
   calculate: (calculatorId: string, params: Record<string, any>) => 
     postData(`/tools/calculate/${calculatorId}`, params)
 };
+=======
+
+  return result;
+}
+>>>>>>> Siddharth

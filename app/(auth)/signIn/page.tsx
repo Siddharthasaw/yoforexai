@@ -52,6 +52,7 @@ export default function SignIn() {
     
     setLoading(true);
     try {
+<<<<<<< HEAD
       const response = await authAPI.requestOtp({ phone: phoneNumber });
       // console.log(response);
       
@@ -60,7 +61,15 @@ export default function SignIn() {
       } else {
         setError('Failed to send OTP. Please try again.');
       }
+=======
+      const response = await postData('/auth/login/request-otp', {
+        phone: whatsapp.includes("+") ? whatsapp : "+" + whatsapp
+      });
+      console.log(response)
+      setStep('verify');
+>>>>>>> Siddharth
     } catch (err: any) {
+      console.log(err)
       showError(err);
     } finally {
       setLoading(false);
@@ -82,6 +91,7 @@ export default function SignIn() {
     try {
       const response = await authAPI.verifyLoginOtp({ phone: phoneNumber, otp });
 
+<<<<<<< HEAD
       // Check for successful login response
       if (response?.token || response?.status === 'success' || 
           response?.status === 'login_successful' || response?.status === 'verified') {
@@ -91,6 +101,17 @@ export default function SignIn() {
           localStorage.setItem('isAuthenticated', 'true');
         }
         router.push('/dashboard');
+=======
+      console.log(response)
+
+      if (
+        response?.token ||
+        response?.status === 'success' ||
+        response?.status === 'login_successful' ||
+        response?.status === 'verified'
+      ) {
+        router.push('/');
+>>>>>>> Siddharth
       } else {
         setError('OTP verification failed. Please try again.');
       }

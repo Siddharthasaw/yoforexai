@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendingUp, TrendingDown, DollarSign, Target, Calculator, Brain, Bell, BarChart, ArrowUpRight, ArrowDownRight, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart as RechartsBarChart, Bar } from 'recharts';
 import { useState, useEffect } from 'react';
+<<<<<<< HEAD:app/dashboard/page.tsx
 import { marketAPI, tradingAPI, newsAPI, forumAPI } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
@@ -18,6 +19,20 @@ type CurrencyPair = {
   change: string;
   positive: boolean;
 };
+=======
+import { getData } from '@/utils/api';
+import TradingTips from "./components/TradingTips";
+
+import LivePriceTicker from "./components/LivePriceTicker";
+
+// const currencyPairs = [
+//   { pair: 'EUR/USD', price: '1.0892', change: '+0.05%', positive: true },
+//   { pair: 'GBP/USD', price: '1.2754', change: '-0.12%', positive: false },
+//   { pair: 'USD/JPY', price: '138.92', change: '+0.23%', positive: true },
+//   { pair: 'AUD/USD', price: '0.6598', change: '+0.08%', positive: true },
+//   { pair: 'USD/CAD', price: '1.3465', change: '-0.03%', positive: false },
+// ];
+>>>>>>> Siddharth:app/(dashboard)/page.tsx
 
 type PerformanceData = {
   day: string;
@@ -239,34 +254,19 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Good morning, {user?.name || "Loading..."}</h1>
-          {/* <p className="text-slate-400">Monday, June 14, 2023</p> */}
         </div>
       </div>
 
       {/* Currency Pairs */}
-      <div className="flex space-x-4 overflow-x-auto pb-2">
-        {currencyPairs.map((currency) => (
-          <Card key={currency.pair} className="flex-shrink-0 bg-slate-800/50 border-slate-700 min-w-[140px]">
-            <CardContent className="p-3">
-              <div className="font-medium text-white text-sm">{currency.pair}</div>
-              <div className="text-lg font-bold text-white">{currency.price}</div>
-              <div className={`text-xs flex items-center ${currency.positive ? 'text-green-400' : 'text-red-400'
-                }`}>
-                {currency.positive ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
-                {currency.change}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <LivePriceTicker />
 
       {/* Trading Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Swing Trading */}
+        {/* Ai Trading Analysis */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-white">Swing Trading</CardTitle>
+              <CardTitle className="text-white">Ai Trading Analysis</CardTitle>
               <p className="text-slate-400 text-sm">H4, D1, W1 Timeframes</p>
             </div>
             <Badge className="bg-blue-600 text-white">7 Active</Badge>
@@ -371,6 +371,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
+
+
+
         {/* Trading Tools */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader>
@@ -400,6 +403,9 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+
+
 
       {/* Community Feed and Trading Tips */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -434,63 +440,12 @@ export default function Dashboard() {
             ))}
           </CardContent>
         </Card>
-
-        {/* Trading Tips */}
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white">Trading Tips</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-3 rounded-lg bg-blue-900/30 border border-blue-800">
-              <h4 className="font-medium text-white mb-2 flex items-center">
-                <Calendar className="h-4 w-4 mr-2" />
-                Daily Insight
-              </h4>
-              <p className="text-sm text-slate-300">
-                USD is showing strength against major pairs today due to positive economic data. Consider this in your trade planning.
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-orange-900/30 border border-orange-800">
-              <h4 className="font-medium text-white mb-2">Risk Management Reminder</h4>
-              <p className="text-sm text-slate-300">
-                Never risk more than 2% of your account on a single trade. Your suggested max position size today: $240.
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-green-900/30 border border-green-800">
-              <h4 className="font-medium text-white mb-2">Market Events</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-slate-300">
-                  <span>USD CPI Data</span>
-                  <span className="text-yellow-400">High Impact</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>USD FOMC Statement</span>
-                  <span className="text-red-400">Extreme Impact</span>
-                </div>
-                <div className="flex justify-between text-slate-300">
-                  <span>GBP Employment Change</span>
-                  <span className="text-yellow-400">High Impact</span>
-                </div>
-              </div>
-              <div className="mt-3 pt-3 border-t border-green-800">
-                <h5 className="font-medium text-white text-sm mb-1">Upcoming Events (Next 2 Hours)</h5>
-                <div className="space-y-1 text-xs text-slate-300">
-                  <div className="flex justify-between">
-                    <span>USD CPI Data</span>
-                    <span>2:30 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>EUR ECB Speech</span>
-                    <span>3:15 PM</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  {/* Trading Tips */}
+        <TradingTips />
+        
       </div>
+
+      
     </div>
   );
 }

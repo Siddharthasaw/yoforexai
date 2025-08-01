@@ -213,10 +213,11 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import Logo from '../app/public/LOGO v2.png';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
-  { name: 'Swing Trading', href: '/swing', icon: TrendingUp },
+  { name: 'AI Trading Analysis', href: '/swing', icon: TrendingUp },
   { name: 'Scalp Trading', href: '/scalp', icon: Zap },
   { name: 'Trade History', href: '/history', icon: History },
 ];
@@ -253,9 +254,17 @@ export function Sidebar() {
           <button onClick={() => setDrawerOpen(true)}>
             <Menu className="h-6 w-6" />
           </button>
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="h-6 w-6 text-blue-500" />
-            <span className="text-lg font-bold text-white">YoForex AI</span>
+          <div className="flex items-center space-x-3">
+            {/* Custom Logo Design */}
+            <div className="flex items-center">
+              <Zap className="h-8 w-8 text-blue-500 drop-shadow" />
+              <span
+                className="ml-2 text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+                style={{ letterSpacing: '1px' }}
+              >
+                YoForex AI
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -282,9 +291,17 @@ export function Sidebar() {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-800">
           {!collapsed && (
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-6 w-6 text-blue-500" />
-              <span className="text-lg font-bold text-white">YoForex AI</span>
+            <div className="flex items-center space-x-3">
+              {/* Custom Logo Design */}
+              <div className="flex items-center">
+                <Zap className="h-8 w-8 text-blue-500 drop-shadow" />
+                <span
+                  className="ml-2 text-2xl font-extrabold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent"
+                  style={{ letterSpacing: '1px' }}
+                >
+                  YoForex AI
+                </span>
+              </div>
             </div>
           )}
           <div className="flex space-x-2 items-center">

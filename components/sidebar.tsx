@@ -216,7 +216,7 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: BarChart3 },
-  { name: 'Swing Trading', href: '/swing', icon: TrendingUp },
+  { name: 'AI Trading Analysis', href: '/swing', icon: TrendingUp },
   { name: 'Scalp Trading', href: '/scalp', icon: Zap },
   { name: 'Trade History', href: '/history', icon: History },
 ];

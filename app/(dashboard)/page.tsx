@@ -111,11 +111,11 @@ export default function Dashboard() {
 
       {/* Trading Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Swing Trading */}
+        {/* Ai Trading Analysis */}
         <Card className="bg-slate-800/50 border-slate-700">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-white">Swing Trading</CardTitle>
+              <CardTitle className="text-white">Ai Trading Analysis</CardTitle>
               <p className="text-slate-400 text-sm">H4, D1, W1 Timeframes</p>
             </div>
             <Badge className="bg-blue-600 text-white">7 Active</Badge>
@@ -220,9 +220,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-
-
-    
 
 
 

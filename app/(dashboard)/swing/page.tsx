@@ -625,6 +625,25 @@ export default function AiChartAnalysis() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">
                 AI Trading Analysis
               </h1>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-400">Powered by</span>
+                <span className="flex items-center">
+                  {/* Icon */}
+                  <svg width="24" height="24" viewBox="0 0 24 24" className="mr-1" fill="none">
+                    <path d="M7 13L13 7V11H17L11 17V13H7Z" stroke="url(#logo-gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <defs>
+                      <linearGradient id="logo-gradient" x1="7" y1="7" x2="17" y2="17" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#3b82f6"/>
+                        <stop offset="1" stopColor="#a78bfa"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  {/* Gradient Text */}
+                  <span className="text-lg font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
+                    YoForex<span className="text-pink-400">AI</span><span className="text-pink-400 font-bold">.com</span>
+                  </span>
+                </span>
+              </div>
             </div>
             <p className="text-slate-400 ml-11">Live TradingView Chart | Select Pair & Timeframe</p>
           </div>
